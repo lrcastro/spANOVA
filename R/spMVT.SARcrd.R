@@ -1,4 +1,4 @@
-#' @importFrom multcomp glht cld
+#' @importFrom multcomp glht cld mcp
 #' @export
 
 spMVT.SARcrd <-function(x, sig.level = 0.05) {
