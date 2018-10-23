@@ -1,3 +1,8 @@
+#' @importFrom ScottKnott SK
+#' @importFrom utils capture.output
+#' @export
+
+
 spScottKnott.SARcrd <- function(x, sig.level = 0.05) {
   invisible(capture.output(out <- summary(SK(x=x$model$model,
                                              model = 'Y_ajus ~ treat', which = 'treat', dispersion = 's',

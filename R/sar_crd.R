@@ -1,3 +1,69 @@
+#' @name sar_crd
+#'
+#' @title Using a SAR model to handle spatial dependence in a Completely Randomized Design
+#' @description Fit a completely randomized design when the experimental units have some degree of
+#' spatial dependence using a Spatial Lag Model (SAR).
+#' @usage sar_crd(resp, treat, coords, radius.min, radius.max, by)
+#'
+#' @param resp Numeric or complex vector containing the values of response variable.
+#' @param treat Numeric or complex vector containing the treatment applied to each experimental unit.
+#' @param coords Matrix of point coordinates or a SpatialPoints Object.
+#' @param ray.min Numeric value specifyng the minimum ray to be considered as a neighbor.
+#' @param ray.max Numeric value specifying the maximum ray to be considered as a neighbor.
+#' @param by Numeric value specifying the increment of the ray sequence.
+#'
+#' @return \code{sar_crd} returns an object of \code{\link[base]{class}} "SARanova".
+#' The functions summary and anova are used to obtain and print a summary and analysis of variance
+#' table of the results.
+#' An object of class "SARanova" is a list containing the following components:
+#'
+#' \item{DF}{degrees of freedom of rho, treatments, residual and total.}
+#' \item{SS}{sum of squares of rho, treatments and residual.}
+#' \item{Fc}{F statistic calculated for treatment.}
+#' \item{p.value}{p-value associated to F statistic for treatment.}
+#' \item{rho}{the autoregressive parameter.}
+#' \item{Par}{data.frame with the radius tested and its AIC.}
+#' \item{y_orig}{vector of response.}
+#' \item{treat}{vector of treatment applied to each experimental unit.}
+#' \item{fitted}{model of class \code{\link[stats]{aov}} using the adjusted response.}
+#'
+#' @references Long, D. S. "Spatial statistics for analysis of variance of agronomic field trials."
+#' Practical handbook of spatial statistics. CRC Press, Boca Raton, FL (1996): 251-278.
+#'
+#' @examples
+#' \dontrun{
+#' data("carrancas")
+#' resp <- carrancas$DAP16
+#' treat <- carrancas$T
+#' coords <- cbind(carrancas$X, carrancas$Y)
+#' radius.min <- 50
+#' radius.max <- 80
+#' by <- 10
+#' cv<-sar_crd(resp, treat, coords, radius.min, radius.max, by)
+#' cv
+#'
+#' #Summary for class SARanova
+#' summary(cv)
+#'
+#' #Anova for class SARanova
+#' anova(cv)
+#'
+#' #Test based on multivariate t-student distribution
+#' spMVT(cv)
+#'
+#' #Tukey's test
+#' spTukey(cv)
+#'
+#' #Scott-Knott test
+#' spScottKnott(cv)
+#'
+#' }
+#'
+#' @import spdep
+#'
+#' @export
+
+
 sar_crd <- function(resp, treat, coords, radius.min, radius.max, by) {
 
   # Defensive programming

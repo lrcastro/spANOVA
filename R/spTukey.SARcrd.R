@@ -1,3 +1,6 @@
+#' @importFrom agricolae HSD.test
+#' @export
+
 spTukey.SARcrd <- function(x, sig.level = 0.05){
   out <- HSD.test(x$model$model[,1], x$model$model[,2],
                   MSerror = x$MS[3], DFerror = x$DF[3], group=TRUE, alpha = sig.level)

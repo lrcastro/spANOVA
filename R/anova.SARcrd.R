@@ -1,3 +1,5 @@
+#' @export
+
 anova.SARcrd <- function(x) {
   cat("Analysis of Variance With Spatially Correlated Errors","\n")
   anova.p1 <- data.frame("DF" = x$DF[1:3],

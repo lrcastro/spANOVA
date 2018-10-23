@@ -1,3 +1,6 @@
+#' @export
+#'
+
 print.SARcrd <- function(x) {
   cat("Terms:","\n")
   trm <- data.frame(treat = c(as.character(round(x$SS[2],3)),as.character(x$DF[2])),

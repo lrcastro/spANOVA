@@ -1,3 +1,6 @@
+#' @importFrom multcomp glht cld
+#' @export
+
 spMVT.SARcrd <-function(x, sig.level = 0.05) {
   comp <-glht(x$model, linfct = mcp(treat = "Tukey"))
   let <- cld(comp,decreasing = TRUE, level = sig.level)

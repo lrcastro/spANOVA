@@ -1,3 +1,5 @@
+#' @export
+
 summary.SARcrd <- function(x) {
   cat("      Summary of CRD","\n","\n")
   cat("Parameters tested:","\n")
