@@ -1,4 +1,42 @@
-ar_crd <- function(resp, treat, coords, radius.min, radius.max, by) {
+sar_crd <- function(resp, treat, coords, radius.min, radius.max, by) {
+
+  # Defensive programming
+  if(!(is.vector(resp) | is.numeric(resp))) {
+    stop("'resp' must be a vector or numeric")
+  }
+
+  if(!(is.vector(treat) | is.numeric(treat))) {
+    stop("'treat' must be a vector or numeric")
+  }
+
+  if(!(is.matrix(coords) | class(coords)=="SpatialPoints")) {
+    stop("'coords' must be a matrix or SpatialPoints object")
+  }
+
+  if(!(is.numeric(radius.min))) {
+    stop("'radius.min' must be a numeric")
+  }
+
+  if(!(is.numeric(radius.max))) {
+    stop("'radius.max' must be a numeric")
+  }
+
+  if(!(is.numeric(by))) {
+    stop("'radius.by' must be a numeric")
+  }
+
+  if(length(radius.min)!=1) {
+    stop("'radius.min' must be of length 1")
+  }
+
+  if(length(radius.max)!=1) {
+    stop("'radius.max' must be of length 1")
+  }
+
+  if(length(by)!=1) {
+    stop("'by' must be of length 1")
+  }
+
 
   seq.radius <- seq(radius.min, radius.max, by=by)
   params <- data.frame(radius = 0, rho = 0, AIC = 0)
@@ -26,32 +64,39 @@ ar_crd <- function(resp, treat, coords, radius.min, radius.max, by) {
   nb <- dnearneigh(coords, 0, seq.radius[best.par])
   w <- nb2mat(nb, style = "W")
   Y_ajus <- resp - (params[best.par,"rho"] * w%*%resp - params[best.par,"rho"] * beta)
-  aov.cl <- anova(aov(resp ~ factor(treat)))
-  aov.ar <- anova(aov(Y_ajus ~ factor(treat)))
-  outpt <- list(DF = c(aov.ar[1][[1]],sum(aov.ar[1][[1]])), SS = c(aov.ar[2][[1]],sum(aov.ar[2][[1]])),
-                MS = c(aov.ar[3][[1]],""), Fc = c(aov.ar[4][[1]],""),
-                p.value = c(aov.ar[5][[1]],""),rho = params[best.par,"rho"],Par = params,
-                Sqt.nadj = sum(aov.cl[,2]))
-  class(outpt)<-c("arAnovaCRD",class(aov.ar))
+  treat <- factor(treat)
+  aov.cl <- anova(aov(resp ~ treat))
+  model <- aov(Y_ajus ~ treat)
+  aov.adj <- anova(model)
+  Sqt.nadj <- sum(aov.cl[,2])
+
+  #Degres of freedom
+  glrho <- 1
+  gltrat <- aov.adj[1][[1]][1]
+  glerror <- aov.adj[1][[1]][2]-1
+  gltot <- sum(glrho,gltrat,glerror)
+
+  #Sum of squares
+  sqrho <- Sqt.nadj - sum(aov.adj[2][[1]])
+  sqtrat <- aov.adj[2][[1]][1]
+  sqerror <- aov.adj[2][[1]][2]
+  sqtot <- sum(sqrho, sqtrat, sqerror)
+
+  #Mean Squares
+  msrho <- sqrho/glrho
+  mstrat <- sqtrat/gltrat
+  mserror <- sqerror/glerror
+
+  #F statistics
+  ftrat <- mstrat/mserror
+  pvalue <- pf(ftrat,gltrat,glerror,lower.tail = FALSE)
+
+  outpt <- list(DF = c(glrho, gltrat, glerror, gltot),
+                SS = c(sqrho, sqtrat, sqerror),
+                MS = c(msrho, mstrat, mserror),
+                Fc = c(ftrat),
+                p.value = c(pvalue),rho = params[best.par,"rho"],Par = params,
+                y_orig = resp, treat = treat , model = model)
+  class(outpt)<-c("SARanova","SARcrd",class(aov.adj))
   return(outpt)
-}
-
-# Definindo a funcao print
-# print <- function(x) {
-#   UseMethod("print",x)
-# }
-
-# Metodo print para a classe arAnovaCRD
-print.arAnovaCRD <- function(x) {
-  cat("Terms:","\n")
-  trm <- data.frame(treat = c(as.character(round(x$SS[1],3)),as.character(x$DF[1])),
-                    Residuals = c(as.character(round(x$SS[2],3)),as.character(x$DF[2])))
-  rownames(trm) <- c("Sum of Squares","Deg. of Freedom")
-  print(trm)
-  rse <- sqrt(x$SS[2]/x$DF[2])
-  cat("\n")
-  cat("Residual standard error:",rse)
-  cat("\n")
-  cat("Spatial autoregressive parameter:", x$rho,"\n")
-  cat("Samples considered neighbor within a",x$Par[which.min(x$Par[,3]),1],"units radius")
 }
