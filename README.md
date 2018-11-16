@@ -10,5 +10,4 @@ Before installing spANOVA make sure you have installed:
 * multcomp
 * gtools
 
-And then you can proceed to installation by typing the following command in R console  
-`devtools::install_github("lrcastro/spANOVA",dependencies=TRUE)`
+And then you can proceed to installation by typing  `devtools::install_github("lrcastro/spANOVA",dependencies=TRUE)` in R console
