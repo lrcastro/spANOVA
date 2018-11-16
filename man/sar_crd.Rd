@@ -4,20 +4,20 @@
 \alias{sar_crd}
 \title{Using a SAR model to handle spatial dependence in a Completely Randomized Design}
 \usage{
-sar_crd(resp, treat, coords, radius.min, radius.max, by)
+sar_crd(resp, treat, coord, radius.min, radius.max, by)
 }
 \arguments{
 \item{resp}{Numeric or complex vector containing the values of response variable.}
 
 \item{treat}{Numeric or complex vector containing the treatment applied to each experimental unit.}
 
-\item{coords}{Matrix of point coordinates or a SpatialPoints Object.}
-
-\item{by}{Numeric value specifying the increment of the ray sequence.}
+\item{coord}{Matrix of point coordinates or a SpatialPoints Object.}
 
 \item{ray.min}{Numeric value specifyng the minimum ray to be considered as a neighbor.}
 
 \item{ray.max}{Numeric value specifying the maximum ray to be considered as a neighbor.}
+
+\item{by}{Numeric value specifying the increment of the ray sequence.}
 }
 \value{
 \code{sar_crd} returns an object of \code{\link[base]{class}} "SARanova".
@@ -44,11 +44,11 @@ spatial dependence using a Spatial Lag Model (SAR).
 data("carrancas")
 resp <- carrancas$DAP16
 treat <- carrancas$T
-coords <- cbind(carrancas$X, carrancas$Y)
+coord <- cbind(carrancas$X, carrancas$Y)
 radius.min <- 50
 radius.max <- 80
 by <- 10
-cv<-sar_crd(resp, treat, coords, radius.min, radius.max, by)
+cv<-sar_crd(resp, treat, coord, radius.min, radius.max, by)
 cv
 
 #Summary for class SARanova

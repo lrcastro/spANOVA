@@ -3,11 +3,11 @@
 #' @title Using a SAR model to handle spatial dependence in a Completely Randomized Design
 #' @description Fit a completely randomized design when the experimental units have some degree of
 #' spatial dependence using a Spatial Lag Model (SAR).
-#' @usage sar_crd(resp, treat, coords, radius.min, radius.max, by)
+#' @usage sar_crd(resp, treat, coord, radius.min, radius.max, by)
 #'
 #' @param resp Numeric or complex vector containing the values of response variable.
 #' @param treat Numeric or complex vector containing the treatment applied to each experimental unit.
-#' @param coords Matrix of point coordinates or a SpatialPoints Object.
+#' @param coord Matrix of point coordinates or a SpatialPoints Object.
 #' @param ray.min Numeric value specifyng the minimum ray to be considered as a neighbor.
 #' @param ray.max Numeric value specifying the maximum ray to be considered as a neighbor.
 #' @param by Numeric value specifying the increment of the ray sequence.
@@ -35,11 +35,11 @@
 #' data("carrancas")
 #' resp <- carrancas$DAP16
 #' treat <- carrancas$T
-#' coords <- cbind(carrancas$X, carrancas$Y)
+#' coord <- cbind(carrancas$X, carrancas$Y)
 #' radius.min <- 50
 #' radius.max <- 80
 #' by <- 10
-#' cv<-sar_crd(resp, treat, coords, radius.min, radius.max, by)
+#' cv<-sar_crd(resp, treat, coord, radius.min, radius.max, by)
 #' cv
 #'
 #' #Summary for class SARanova
@@ -60,11 +60,11 @@
 #' }
 #'
 #' @import spdep
-#'
-#' @export
+#' @importFrom gtools stars.pval
+#' @export sar_crd print.SARcrd summary.SARcrd anova.SARcrd
 
 
-sar_crd <- function(resp, treat, coords, radius.min, radius.max, by) {
+sar_crd <- function(resp, treat, coord, radius.seq) {
 
   # Defensive programming
   if(!(is.vector(resp) | is.numeric(resp))) {
@@ -75,36 +75,19 @@ sar_crd <- function(resp, treat, coords, radius.min, radius.max, by) {
     stop("'treat' must be a vector or numeric")
   }
 
-  if(!(is.matrix(coords) | class(coords)=="SpatialPoints")) {
-    stop("'coords' must be a matrix or SpatialPoints object")
+  if(!(is.matrix(coord) | class(coord)=="SpatialPoints")) {
+    stop("'coord' must be a matrix or SpatialPoints object")
   }
 
-  if(!(is.numeric(radius.min))) {
-    stop("'radius.min' must be a numeric")
+  if(ncol(coord) < 2){
+    stop("'coord' must have at least two columns")
   }
 
-  if(!(is.numeric(radius.max))) {
-    stop("'radius.max' must be a numeric")
+  if(missing(radius.seq)){
+    max.dist <- max(dist(coord))
+    seq.radius <- seq(0, 0.5*max.dist, l = 11)[-1]
   }
 
-  if(!(is.numeric(by))) {
-    stop("'radius.by' must be a numeric")
-  }
-
-  if(length(radius.min)!=1) {
-    stop("'radius.min' must be of length 1")
-  }
-
-  if(length(radius.max)!=1) {
-    stop("'radius.max' must be of length 1")
-  }
-
-  if(length(by)!=1) {
-    stop("'by' must be of length 1")
-  }
-
-
-  seq.radius <- seq(radius.min, radius.max, by=by)
   params <- data.frame(radius = 0, rho = 0, AIC = 0)
   anova.list <- list()
   n <- length(resp)
@@ -112,8 +95,20 @@ sar_crd <- function(resp, treat, coords, radius.min, radius.max, by) {
   Y_ajus <- NULL
 
   for (i in 1:p.radius) {
-    nb <- dnearneigh(coords, 0, seq.radius[i])
-    w <- nb2mat(nb, style = "W")
+    nb <- dnearneigh(coord, 0, seq.radius[i])
+    w <- try(nb2mat(nb, style = "W"), silent = TRUE)
+    test <- grepl("Error", w)
+
+    # Se caso nao forem encontradas amostras dentro do raio especificado
+    k <- 0.1 # incremento
+    while(test[1] == TRUE){
+      seq.radius <- seq(0, (0.5+k)*max.dist, l = 11)[-1]
+      nb <- dnearneigh(coord, 0, seq.radius[i])
+      w <- try(nb2mat(nb, style = "W"), silent = TRUE)
+      test <- grepl("Error", w)
+      k <- k + 0.1
+    }
+
     listw <- nb2listw(nb, glist = NULL, style = "W")
 
     # SAR model
@@ -127,7 +122,7 @@ sar_crd <- function(resp, treat, coords, radius.min, radius.max, by) {
   # Adjusting the data and constructing the ANOVA table
   best.par <- which.min(params$AIC)
   beta <- mean(resp)
-  nb <- dnearneigh(coords, 0, seq.radius[best.par])
+  nb <- dnearneigh(coord, 0, seq.radius[best.par])
   w <- nb2mat(nb, style = "W")
   Y_ajus <- resp - (params[best.par,"rho"] * w%*%resp - params[best.par,"rho"] * beta)
   treat <- factor(treat)
@@ -137,32 +132,88 @@ sar_crd <- function(resp, treat, coords, radius.min, radius.max, by) {
   Sqt.nadj <- sum(aov.cl[,2])
 
   #Degres of freedom
-  glrho <- 1
   gltrat <- aov.adj[1][[1]][1]
-  glerror <- aov.adj[1][[1]][2]-1
-  gltot <- sum(glrho,gltrat,glerror)
+  glerror <- aov.adj[1][[1]][2]
+  gltot <- sum(gltrat,glerror)
 
   #Sum of squares
-  sqrho <- Sqt.nadj - sum(aov.adj[2][[1]])
   sqtrat <- aov.adj[2][[1]][1]
   sqerror <- aov.adj[2][[1]][2]
-  sqtot <- sum(sqrho, sqtrat, sqerror)
+  sqtot <- sum(sqtrat, sqerror)
+  sqtotcor <- Sqt.nadj - sqtot
 
   #Mean Squares
-  msrho <- sqrho/glrho
   mstrat <- sqtrat/gltrat
   mserror <- sqerror/glerror
 
   #F statistics
   ftrat <- mstrat/mserror
   pvalue <- pf(ftrat,gltrat,glerror,lower.tail = FALSE)
+  name.y <- paste(deparse(substitute(resp)))
+  name.x <- paste(deparse(substitute(treat)))
 
-  outpt <- list(DF = c(glrho, gltrat, glerror, gltot),
-                SS = c(sqrho, sqtrat, sqerror),
-                MS = c(msrho, mstrat, mserror),
+  outpt <- list(DF = round(c(gltrat, glerror, gltot),0),
+                SS = c(sqtrat, sqerror, sqtotcor),
+                MS = c(mstrat, mserror),
                 Fc = c(ftrat),
-                p.value = c(pvalue),rho = params[best.par,"rho"],Par = params,
-                y_orig = resp, treat = treat , model = model)
+                p.value = c(pvalue), rho = params[best.par,"rho"], Par = params,
+                y_orig = resp, treat = treat , model = model, namey = name.y,
+                namex = name.x)
   class(outpt)<-c("SARanova","SARcrd",class(aov.adj))
   return(outpt)
 }
+
+
+# Print method for this class
+
+print.SARcrd <- function(x) {
+  cat("Response: ", x$namey, "\n")
+  cat("Terms:","\n")
+  trm <- data.frame(treat = c(as.character(round(x$SS[2],3)),as.character(x$DF[2])),
+                    Residuals = c(as.character(round(x$SS[3],3)),as.character(x$DF[3])))
+  rownames(trm) <- c("Sum of Squares","Deg. of Freedom")
+  print(trm)
+  rse <- sqrt(x$MS[2])
+  cat("\n")
+  cat("Residual standard error:",rse)
+  cat("\n")
+  cat("Spatial autoregressive parameter:", x$rho,"\n")
+  cat("Samples considered neighbor within a",x$Par[which.min(x$Par[,3]),1],"units radius")
+}
+
+
+# Summary method for this class
+
+summary.SARcrd <- function(x) {
+  cat("      Summary of CRD","\n","\n")
+  cat("Parameters tested:","\n")
+  print(x$Par)
+  cat("\n")
+  cat("Selected parameters:","\n")
+  print(x$Par[which.min(x$Par[,3]),])
+}
+
+# Anova method for this class
+
+anova.SARcrd <- function(x) {
+  cat("Analysis of Variance With Spatially Correlated Errors","\n")
+  cat("\n")
+  cat("Response:", ifelse(length(x$namey)>1,"resp",x$namey), "\n")
+  star <- stars.pval(x$p.value)
+  anova.p1 <- data.frame("DF" = round(x$DF[1:3],0),
+                         "SS" = round(x$SS[1:3],4),
+                         "MS" = c(round(x$MS[1:2],4), ""),
+                         "Fc" = c(round(x$Fc,4), "", ""),
+                         "Pv" = c(format.pval(x$p.value), "", ""),
+                         "St" = c(star, "", "")
+  )
+  colnames(anova.p1) <- c("Df", "Sum Sq", "Mean Sq", "F Value" ,"Pr(>Fc)", "")
+  rownames(anova.p1) <- c("Treatment","Residuals","Corrected Total")
+  print(anova.p1)
+  cat("---","\n")
+  cat("Signif. codes: ",attr(star, "legend"))
+}
+
+
+#exportar a funcao stars.pval do pacote gtools
+

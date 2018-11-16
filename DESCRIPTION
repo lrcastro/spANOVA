@@ -8,4 +8,4 @@ Description: This package provides functions to perform analysis of variance whe
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
