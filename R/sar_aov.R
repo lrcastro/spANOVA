@@ -1,33 +1,29 @@
-#' @name sar_crd
+#' @name sar_aov
 #'
-#' @title Using a SAR model to handle spatial dependence in a Completely Randomized Design
+#' @title Using a SAR model to handle spatial dependence in a aov model.
 #' @description Fit a completely randomized design when the experimental units have some degree of
 #' spatial dependence using a Spatial Lag Model (SAR).
-#' @usage sar_crd(resp, treat, coord, seq.radius = NULL)
+#' @usage sar_aov(formula, coord, data, seq.radius = NULL)
 #'
-#' @param resp Numeric or complex vector containing the values of response variable.
-#' @param treat Numeric or complex vector containing the treatment applied to each experimental unit.
-#' @param coord Matrix of point coordinates or a SpatialPoints Object.
-#' @param seq.radius Complex vector containing a radii sequence used to set the neighborhood pattern.
+#' @param formula A formula specifying the model.
+#' @param coord A matrix or data.frame of point coordinates or a SpatialPoints Object.
+#' @param data A data frame in which the variables specified in the formula will be found.
+#' @param seq.radius A complex vector containing a radii sequence used to set the neighborhood pattern.
 #' The default sequence has ten numbers from 0 to half of the maximum distance between the samples.
 #'
-#' @return \code{sar_crd} returns an object of \code{\link[base]{class}} "SARanova".
+#' @return \code{sar_aov} returns an object of \code{\link[base]{class}} "SARaov".
 #' The functions summary and anova are used to obtain and print a summary and analysis of variance
 #' table of the results.
-#' An object of class "SARanova" is a list containing the following components:
+#' An object of class "SARaov" is a list containing the following components:
 #'
 #' \item{DF}{degrees of freedom of rho, treatments, residual and total.}
 #' \item{SS}{sum of squares of rho, treatments and residual.}
-#' \item{Fc}{F statistic calculated for treatment.}
-#' \item{p.value}{p-value associated to F statistic for treatment.}
 #' \item{rho}{the autoregressive parameter.}
 #' \item{Par}{data.frame with the radius tested and its AIC.}
-#' \item{y_orig}{vector of response.}
-#' \item{treat}{vector of treatment applied to each experimental unit.}
 #' \item{modelAdj}{model of class \code{\link[stats]{aov}} using the adjusted response.}
-#' \item{namey}{response variable name.}
-#' \item{namex}{treatment variable name.}
 #' \item{modelstd}{data frame containing the ANOVA table using non-adjusted response.}
+#' \item{namey}{response variable name.}
+#'
 #'
 #' @references Long, D. S. "Spatial statistics for analysis of variance of agronomic field trials."
 #' Practical handbook of spatial statistics. CRC Press, Boca Raton, FL (1996): 251-278.
@@ -38,7 +34,8 @@
 #' resp <- carrancas$DAP16
 #' treat <- carrancas$T
 #' coord <- cbind(carrancas$X, carrancas$Y)
-#' cv<-sar_crd(resp, treat, coord, seq.radius)
+#' mdl <- aov(resp ~ treat, data = carrancas)
+#' cv<-sar_aov(mdl, coord)
 #' cv
 #'
 #' #Summary for class SARanova
@@ -46,40 +43,34 @@
 #'
 #' #Anova for class SARanova
 #' anova(cv)
-#'
-#' #Test based on multivariate t-student distribution
-#' spMVT(cv)
-#'
-#' #Tukey's test
-#' spTukey(cv)
-#'
-#' #Scott-Knott test
-#' spScottKnott(cv)
-#'
 #' }
 #'
 #' @import spdep
 #' @importFrom gtools stars.pval
-#' @export sar_crd print.SARcrd summary.SARcrd anova.SARcrd
+#' @importFrom car Anova
+#' @export sar_aov print.SARaov summary.SARaov anova.SARaov
 
-
-sar_crd <- function(resp, treat, coord, seq.radius) {
+sar_aov <- function(formula, coord, data, seq.radius) {
 
   # Defensive programming
-  if(!(is.vector(resp) | is.numeric(resp))) {
-    stop("'resp' must be a vector or numeric")
-  }
-
-  if(!(is.vector(treat) | is.numeric(treat))) {
-    stop("'treat' must be a vector or numeric")
-  }
-
   if(!(is.matrix(coord) | class(coord)=="SpatialPoints")) {
     stop("'coord' must be a matrix or SpatialPoints object")
   }
 
   if(ncol(coord) < 2){
     stop("'coord' must have at least two columns")
+  }
+
+  if(missing(data)){
+    stop("'data' must be provided")
+  }
+
+  if(class(data) != "data.frame"){
+    stop("'data' must be a data.frame")
+  }
+
+  if(is.data.frame(coord)){
+    coord <- as.matrix(coord, ncol = ncol(coord))
   }
 
   if(missing(seq.radius)){
@@ -89,10 +80,11 @@ sar_crd <- function(resp, treat, coord, seq.radius) {
 
   params <- data.frame(radius = 0, rho = 0, AIC = 0)
   anova.list <- list()
-  n <- length(resp)
   p.radius <- length(seq.radius)
   Y_ajus <- NULL
-  treat <- factor(treat)
+  form.char <- invisible(capture.output(print(formula, showEnv = FALSE)))
+  formula.sar <- as.formula(gsub("as.factor|factor", "", form.char))
+
 
   for (i in 1:p.radius) {
     nb <- dnearneigh(coord, 0, seq.radius[i])
@@ -112,12 +104,18 @@ sar_crd <- function(resp, treat, coord, seq.radius) {
     listw <- nb2listw(nb, glist = NULL, style = "W")
 
     # SAR model
-    SAR <- lagsarlm(resp ~ treat, listw = listw,
+    SAR <- lagsarlm(formula.sar, data = data, listw = listw,
                     method = "eigen", tol.solve = 1e-15)
     ajuste <- summary(SAR)
     rho <- as.numeric(ajuste["rho"]$rho)
     params[i, ] <- c(raio = seq.radius[i], rho = rho, AIC = AIC(SAR))
   }
+
+  # Separar o nome da variavel resposta na formula para substitui-la por Y_ajus
+  form.split <- strsplit(form.char, "~")[[1]]
+  new.formula <- as.formula(paste("Y_ajus","~",form.split[2]))
+  resp.name <- sub(" ","",form.split[1])
+  resp <- data[ ,resp.name]
 
   # Adjusting the data and constructing the ANOVA table
   best.par <- which.min(params$AIC)
@@ -125,54 +123,44 @@ sar_crd <- function(resp, treat, coord, seq.radius) {
   nb <- dnearneigh(coord, 0, seq.radius[best.par])
   w <- nb2mat(nb, style = "W")
   Y_ajus <- resp - (params[best.par,"rho"] * w%*%resp - params[best.par,"rho"] * beta)
-  aov.cl <- anova(aov(resp ~ treat))
-  model.adj <- aov(Y_ajus ~ treat)
+  model.cl <- aov(formula, data = data)
+  aov.cl <- anova(model.cl)
+
+  # Fazer a analise com os dados ajustados
+  new.data <- data
+  new.data[ ,resp.name] <- Y_ajus
+  model.adj <- aov(new.formula, data = new.data)
   aov.adj <- anova(model.adj)
   Sqt.nadj <- sum(aov.cl[,2])
 
   #Degres of freedom
-  gltrat <- aov.adj[1][[1]][1]
-  glerror <- aov.adj[1][[1]][2]
-  gltot <- sum(gltrat,glerror)
+  glerror <- model.cl$df.residual
 
   #Sum of squares
-  sqtrat <- aov.adj[2][[1]][1]
-  sqerror <- aov.adj[2][[1]][2]
-  sqtot <- sum(sqtrat, sqerror)
+  sqerror <- sum(model.cl$residuals^2)
+  sqtot <- sum(aov.adj[,2])
   sqtotcor <- Sqt.nadj - sqtot
 
   #Mean Squares
-  mstrat <- sqtrat/gltrat
   mserror <- sqerror/glerror
 
-  #F statistics
-  ftrat <- mstrat/mserror
-  pvalue <- pf(ftrat,gltrat,glerror,lower.tail = FALSE)
-  name.y <- paste(deparse(substitute(resp)))
-  name.x <- paste(deparse(substitute(treat)))
+  name.y <- names(attr(model.cl$terms,"dataClasses")[1])
 
-  outpt <- list(DF = round(c(gltrat, glerror, gltot),0),
-                SS = c(sqtrat, sqerror, sqtotcor),
-                MS = c(mstrat, mserror),
-                Fc = c(ftrat),
-                p.value = c(pvalue), rho = params[best.par,"rho"], Par = params,
-                y_orig = resp, treat = treat , modelAdj = model.adj, namey = name.y,
-                namex = name.x, modelstd = aov.cl)
-  class(outpt)<-c("SARanova","SARcrd",class(aov.adj))
+  outpt <- list(DF = glerror,
+                SS = c(sqerror, sqtotcor),
+                MS = c(mserror),
+                rho = params[best.par,"rho"], Par = params,
+                modelAdj = model.adj, modelstd = aov.cl, namey = name.y)
+
+  class(outpt)<-c("SARaov",class(aov.adj))
   return(outpt)
 }
 
-
 # Print method for this class
 
-print.SARcrd <- function(x) {
+print.SARaov <- function(x) {
   cat("Response: ", x$namey, "\n")
-  cat("Terms:","\n")
-  trm <- data.frame(treat = c(as.character(round(x$SS[1],3)),as.character(x$DF[1])),
-                    Residuals = c(as.character(round(x$SS[2],3)),as.character(x$DF[2])))
-  rownames(trm) <- c("Sum of Squares","Deg. of Freedom")
-  print(trm)
-  rse <- sqrt(x$MS[2])
+  rse <- sqrt(x$MS)
   cat("\n")
   cat("Residual standard error:",rse)
   cat("\n")
@@ -180,11 +168,10 @@ print.SARcrd <- function(x) {
   cat("Samples considered neighbor within a",x$Par[which.min(x$Par[,3]),1],"units radius")
 }
 
-
 # Summary method for this class
 
-summary.SARcrd <- function(x) {
-  cat("      Summary of CRD","\n","\n")
+summary.SARaov <- function(x) {
+  cat("      Summary of SARaov","\n","\n")
   cat("Parameters tested:","\n")
   print(x$Par)
   cat("\n")
@@ -194,7 +181,13 @@ summary.SARcrd <- function(x) {
 
 # Anova method for this class
 
-anova.SARcrd <- function(x, compare = FALSE) {
+anova.SARaov <- function(x, type = c("II","III", 2, 3), compare = FALSE) {
+  type <- as.character(type)
+  type <- match.arg(type)
+
+  if(missing(type)){
+    type = "II"
+  }
 
   if(is.logical(compare) == FALSE){
     warning("'compare' must be logical. Assuming compare == FALSE")
@@ -203,20 +196,8 @@ anova.SARcrd <- function(x, compare = FALSE) {
 
   cat("Analysis of Variance With Spatially Correlated Errors","\n")
   cat("\n")
-  cat("Response:", ifelse(length(x$namey)>1,"resp",x$namey), "\n")
-  star <- stars.pval(x$p.value)
-  anova.p1 <- data.frame("DF" = round(x$DF[1:3],0),
-                         "SS" = round(x$SS[1:3],4),
-                         "MS" = c(round(x$MS[1:2],4), ""),
-                         "Fc" = c(round(x$Fc,4), "", ""),
-                         "Pv" = c(format.pval(x$p.value), "", ""),
-                         "St" = c(star, "", "")
-  )
-  colnames(anova.p1) <- c("Df", "Sum Sq", "Mean Sq", "F Value" ,"Pr(>Fc)", "")
-  rownames(anova.p1) <- c("Treatment","Residuals","Corrected Total")
-  print(anova.p1)
-  cat("---","\n")
-  cat("Signif. codes: ",attr(star, "legend"))
+  print(Anova(x$modelAdj, type = type))
+
 
   if(compare){
     cat("\n", "\n")
