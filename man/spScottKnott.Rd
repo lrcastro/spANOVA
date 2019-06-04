@@ -33,6 +33,38 @@ adjusted response.
 For objects of class GEOanova, the method is modified to take into account the spatial
 dependence among the observations. The method is described in Nogueira (2017).
 }
+\examples{
+
+\dontrun{
+data("crd_simulated")
+
+#Geodata object
+geodados <- as.geodata(crd_simulated, coords.col = 1:2, data.col = 3,
+                      covar.col = 4)
+h_max <- summary(geodados)[[3]][[2]]
+dist <- 0.6*h_max
+
+# Computing the variogram
+variograma <- spVariog(geodata = geodados,
+                      trend = "cte", max.dist = dist, design = "crd",
+                      scale = FALSE)
+
+plot(variograma, ylab = "Semivariance", xlab = "Distance")
+
+# Gaussian Model
+ols <- spVariofit(variograma, cov.model = "gaussian", weights = "equal",
+                 max.dist = dist)
+
+
+# Compute the model and get the analysis of variance table
+mod <- aovGeo(ols, cutoff = 0.6)
+
+# Scott-Knott clustering algorithm
+spMVT(mod)
+}
+
+
+}
 \references{
 NOGUEIRA, C. H. Testes para comparações múltiplas de
 médias em experimentos com tendência e dependência espacial.

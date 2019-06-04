@@ -67,36 +67,26 @@
 #' Arlinghaus, S.L. (Ed.), Practical Handbook of Spatial Statistics. CRC Press, Boca Raton, FL,
 #' pp. 251–278.
 #'
+#' ROSSONI, D. F.; LIMA, R. R. . Autoregressive analysis of variance for experiments with spatial
+#' dependence between plots: a simulation study. REVISTA BRASILEIRA DE BIOMETRIA, 2019
+#'
 #' Scolforo, Henrique Ferraço, et al. "Autoregressive spatial analysis and individual
 #' tree modeling as strategies for the management of Eremanthus erythropappus." Journal of
 #' forestry research 27.3 (2016): 595-603.
 #'
+#'
 #' @examples
-#' \dontrun{
-#' data("carrancas")
-#' resp <- carrancas$DAP16
-#' treat <- carrancas$T
-#' block <- carrancas$Bloco
-#' coord <- cbind(carrancas$X, carrancas$Y)
-#' cv<-aovSar.rcbd(resp, treat, block, coord)
-#' cv
+#' data("rcbd_simulated")
 #'
-#' #Summary for class SARanova
-#' summary(cv)
+#' # Fitting the model
+#' model <- aovSar.rcbd(rcbd_simulated$y, rcbd_simulated$trat, rcbd_simulated$block,
+#'                      cbind(rcbd_simulated$coordX, rcbd_simulated$coordY))
 #'
-#' #Anova for class SARanova
-#' anova(cv)
+#' # Summary for class SARanova
+#' summary(model)
 #'
-#' #Test based on multivariate t-student distribution
-#' spMVT(cv)
-#'
-#' #Tukey's test
-#' spTukey(cv)
-#'
-#' #Scott-Knott test
-#' spScottKnott(cv)
-#'
-#' }
+#' # Anova for class SARanova
+#' anova(model)
 #'
 #' @import spdep
 #' @importFrom gtools stars.pval
@@ -273,7 +263,7 @@ anova.SARrcbd <- function(object, compare = FALSE, ...) {
   rownames(anova.p1) <- c("Treatment", "Block", "Residuals", "Corrected Total")
   print(anova.p1)
   cat("---","\n")
-  cat("Signif. codes: ",attr(star, "legend"))
+  cat("Signif. codes: ",attr(star, "legend"), "\n")
 
   if(compare){
     cat("\n", "\n")

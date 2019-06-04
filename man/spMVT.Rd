@@ -19,7 +19,9 @@ spMVT(x, sig.level = 0.05)
 significance level to use.}
 }
 \value{
-a data frame containing the means and its group.
+a data frame containing the original mean, the spatially filtered mean and its group.
+For the class GEOanova, the spatial dependence is filtered out using geostatistics,
+while for the class SARanova the adjusted response based on SAR model is employed.
 }
 \description{
 Use a multivariate t student distribution to assess the equality of means.
@@ -31,6 +33,37 @@ response.
 
 For objects of class GEOanova, the test is modified to accommodate the
 spatial dependence among the observations as pointed out by Nogueira (2017)
+}
+\examples{
+
+\dontrun{
+data("crd_simulated")
+
+#Geodata object
+geodados <- as.geodata(crd_simulated, coords.col = 1:2, data.col = 3,
+                      covar.col = 4)
+h_max <- summary(geodados)[[3]][[2]]
+dist <- 0.6*h_max
+
+# Computing the variogram
+variograma <- spVariog(geodata = geodados,
+                      trend = "cte", max.dist = dist, design = "crd",
+                      scale = FALSE)
+
+plot(variograma, ylab = "Semivariance", xlab = "Distance")
+
+# Gaussian Model
+ols <- spVariofit(variograma, cov.model = "gaussian", weights = "equal",
+                 max.dist = dist)
+
+lines(ols, col = 1)
+
+# Compute the model and get the analysis of variance table
+mod <- aovGeo(ols, cutoff = 0.6)
+
+# Multivariate T test
+spMVT(mod)
+}
 }
 \references{
 NOGUEIRA, C. H. Testes para comparações múltiplas de

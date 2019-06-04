@@ -8,7 +8,7 @@
 #'
 #' @usage spVariog(geodata, resp = NULL, treat = NULL, block = NULL, coords = NULL,
 #' data = NULL, trend = c("cte", "1st"), scale = FALSE, max.dist,
-#' design = c("CRD", "RCBD"), ...)
+#' design = c("crd", "rcbd"), ...)
 #'
 #' @param geodata an object of class \code{geodata} in which the response variable
 #' should be given in 'data.col', the coordinates in 'coords.col', the treatment vector
@@ -33,8 +33,8 @@
 #' See ‘Details’.
 #' @param max.dist numerical value defining the maximum distance for the variogram.
 #' See \code{\link[geoR]{variog}} documentation for additional information.
-#' @param design type of experimental design. "CRD" corresponds to Completely Randomized
-#' Design and "RCBD" corresponds to Randomized Complete Block Design.
+#' @param design type of experimental design. "crd" corresponds to Completely Randomized
+#' Design and "rcbd" corresponds to Randomized Complete Block Design.
 #' @param ... further arguments to be passed to \code{\link[geoR]{variog}} function.
 #'
 #' @details
@@ -56,14 +56,31 @@
 #' \item{data.geo}{an object of class geodata}
 #' \item{des.mat}{the design matrix}
 #' \item{trend}{a character specifying the type of spatial trend}
-#
+#'
+#' @examples
+#' data("crd_simulated")
+#' dados <- crd_simulated
+#'
+#' #Geodata object
+#' geodados <- as.geodata(dados, coords.col = 1:2, data.col = 3,
+#'                             covar.col = 4)
+#' h_max <- summary(geodados)[[3]][[2]]
+#' dist <- 0.6*h_max
+#'
+#' # Computing the variogram
+#' variograma <- spVariog(geodata = geodados,
+#'                       trend = "cte", max.dist = dist, design = "crd",
+#'                       scale = FALSE)
+#'
+#' plot(variograma, ylab = "Semivariance", xlab = "Distance")
+#'
 #' @seealso \code{\link[geoR]{variog}}
 #' @export
 
 spVariog <- function(geodata, resp = NULL, treat = NULL,
                      block = NULL, coords = NULL, data = NULL,
                      trend = c("cte", "1st"), scale = FALSE,
-                     max.dist, design = c("CRD", "RCBD"), ...){
+                     max.dist, design = c("crd", "rcbd"), ...){
 
 
   trend <- as.character(trend)
@@ -169,7 +186,7 @@ spVariog <- function(geodata, resp = NULL, treat = NULL,
     }
 
     # Se o objeto geodata nao for fornecido, mas resp e treat forem vetores e coords mat ou df
-    if(design == "RCBD"){
+    if(design == "rcbd"){
       if(is.null(block)){
         stop("'block' must be provided")
       }
@@ -199,7 +216,7 @@ spVariog <- function(geodata, resp = NULL, treat = NULL,
 
   } else {
 
-    if(design == "RCBD"){
+    if(design == "rcbd"){
       block <- geodata$covariate[,2]
     }
 
@@ -222,7 +239,7 @@ spVariog <- function(geodata, resp = NULL, treat = NULL,
       }
 
       # Se for RCBD e geodata estiver presente
-      if((ncol(geodata$covariate) != 2) & design == "RCBD"){
+      if((ncol(geodata$covariate) != 2) & design == "rcbd"){
         stop("Treat and Block must be specified as covariates in geodata object")
       }
 
@@ -243,7 +260,7 @@ spVariog <- function(geodata, resp = NULL, treat = NULL,
     geodata$coords[ ,2] <- geodata$coords[,2] - min(geodata$coords[,2])
   }
 
-  if(design == "CRD"){
+  if(design == "crd"){
     trt <- length(unique(geodata$covariate[,1])) #numero de tratamentos
     r <- tapply(geodata$data, geodata$covariate[,1], length) # O nº de obs por categoria
     n <- sum(r)

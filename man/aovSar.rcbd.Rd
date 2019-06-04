@@ -73,37 +73,26 @@ The aim of this transformation is converting autocorrelated observations into no
 in order to apply the analysis of variance and obtain suitable inferences.
 }
 \examples{
-\dontrun{
-data("carrancas")
-resp <- carrancas$DAP16
-treat <- carrancas$T
-block <- carrancas$Bloco
-coord <- cbind(carrancas$X, carrancas$Y)
-cv<-aovSar.rcbd(resp, treat, block, coord)
-cv
+data("rcbd_simulated")
 
-#Summary for class SARanova
-summary(cv)
+# Fitting the model
+model <- aovSar.rcbd(rcbd_simulated$y, rcbd_simulated$trat, rcbd_simulated$block,
+                     cbind(rcbd_simulated$coordX, rcbd_simulated$coordY))
 
-#Anova for class SARanova
-anova(cv)
+# Summary for class SARanova
+summary(model)
 
-#Test based on multivariate t-student distribution
-spMVT(cv)
-
-#Tukey's test
-spTukey(cv)
-
-#Scott-Knott test
-spScottKnott(cv)
-
-}
+# Anova for class SARanova
+anova(model)
 
 }
 \references{
 Long, D.S., 1996. Spatial statistics for analysis of variance of agronomic field trials. In:
 Arlinghaus, S.L. (Ed.), Practical Handbook of Spatial Statistics. CRC Press, Boca Raton, FL,
 pp. 251–278.
+
+ROSSONI, D. F.; LIMA, R. R. . Autoregressive analysis of variance for experiments with spatial
+dependence between plots: a simulation study. REVISTA BRASILEIRA DE BIOMETRIA, 2019
 
 Scolforo, Henrique Ferraço, et al. "Autoregressive spatial analysis and individual
 tree modeling as strategies for the management of Eremanthus erythropappus." Journal of

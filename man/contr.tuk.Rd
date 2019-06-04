@@ -18,3 +18,8 @@ Compute Tukey's contrast matrix
 \details{
 Computes the matrix of contrasts for comparisons of mean levels.
 }
+\examples{
+x <- c(10, 5, 8, 4, 12, 18)
+contr.tuk(x)
+
+}

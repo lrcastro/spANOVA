@@ -70,34 +70,24 @@
 #' Arlinghaus, S.L. (Ed.), Practical Handbook of Spatial Statistics. CRC Press, Boca Raton, FL,
 #' pp. 251–278.
 #'
+#' ROSSONI, D. F.; LIMA, R. R. . Autoregressive analysis of variance for experiments with spatial
+#' dependence between plots: a simulation study. REVISTA BRASILEIRA DE BIOMETRIA, 2019
+#'
 #' Long, D. S. (1998). Spatial autoregression modeling of site-specific wheat yield. Geoderma,
 #' 85(2-3), 181-197.
 #'
 #' @examples
-#' \dontrun{
-#' data("carrancas")
-#' resp <- carrancas$DAP16
-#' treat <- carrancas$T
-#' coord <- cbind(carrancas$X, carrancas$Y)
-#' cv<-aovSar.crd(resp, treat, coord)
-#' cv
+#' data("crd_simulated")
+#' resp <- crd_simulated$y
+#' treat <- crd_simulated$trat
+#' coord <- cbind(crd_simulated$coordX, crd_simulated$coordY)
+#' cv <- aovSar.crd(resp, treat, coord)
 #'
 #' #Summary for class SARanova
 #' summary(cv)
 #'
 #' #Anova for class SARanova
 #' anova(cv)
-#'
-#' #Test based on multivariate t-student distribution
-#' spMVT(cv)
-#'
-#' #Tukey's test
-#' spTukey(cv)
-#'
-#' #Scott-Knott test
-#' spScottKnott(cv)
-#'
-#' }
 #'
 #' @import spdep
 #' @importFrom gtools stars.pval
@@ -261,7 +251,7 @@ anova.SARcrd <- function(object, compare = FALSE, ...) {
   rownames(anova.p1) <- c("Treatment","Residuals","Corrected Total")
   print(anova.p1)
   cat("---","\n")
-  cat("Signif. codes: ",attr(star, "legend"))
+  cat("Signif. codes: ",attr(star, "legend"),"\n")
 
   if(compare){
     cat("\n", "\n")

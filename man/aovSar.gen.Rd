@@ -66,10 +66,9 @@ The aim of this transformation is converting autocorrelated observations into no
 in order to apply the analysis of variance and obtain suitable inferences.
 }
 \examples{
-\dontrun{
-data("carrancas")
-coord <- cbind(carrancas$X, carrancas$Y)
-cv<-aovSar.gen(DAP16 ~ T, coord, data = carrancas)
+data("crd_simulated")
+coord <- cbind(crd_simulated$coordX, crd_simulated$coordY)
+cv <- aovSar.gen(y ~ trat, coord, data = crd_simulated)
 cv
 
 #Summary for class SARanova
@@ -77,10 +76,16 @@ summary(cv)
 
 #Anova for class SARanova
 anova(cv)
-}
 
 }
 \references{
 Long, D. S. "Spatial statistics for analysis of variance of agronomic field trials."
 Practical handbook of spatial statistics. CRC Press, Boca Raton, FL (1996): 251-278.
+
+ROSSONI, D. F.; LIMA, R. R. . Autoregressive analysis of variance for experiments with spatial
+dependence between plots: a simulation study. REVISTA BRASILEIRA DE BIOMETRIA, 2019
+
+Scolforo, Henrique Ferraço, et al. "Autoregressive spatial analysis and individual
+tree modeling as strategies for the management of Eremanthus erythropappus." Journal of
+forestry research 27.3 (2016): 595-603.
 }

@@ -4,9 +4,9 @@ shinyUI(fluidPage(
   titlePanel("SpANOVA"),
   sidebarLayout(
     sidebarPanel(
-      selectInput("spem",label = "Spatial Error Modelling", 
+      selectInput("spem",label = "Spatial Error Modelling",
                   choices = c("Geostatistical Approach" = "geoest",
-                      "Spatial Simultaneous Autoregressive Approach" = "arm"), 
+                      "Spatial Simultaneous Autoregressive Approach" = "arm"),
                        selected = "geoest"),
       uiOutput("expd"),
       tags$hr(),
@@ -35,7 +35,7 @@ shinyUI(fluidPage(
             value = "panel1"),
         tabPanel("Analysis",
                  tags$br(),
-                 busyIndicator(text = "Calculation in progress..",wait = 500),
+                 #busyIndicator(text = "Calculation in progress..",wait = 500),
                  strong(textOutput("txt1")),
                  uiOutput("anovaTable"),
                  tags$br(),
@@ -44,14 +44,15 @@ shinyUI(fluidPage(
                    column(6, plotOutput("histogramaRes")),
                    column(6, plotOutput("qqplotNorm"))
                  ),
+                 fluidRow(plotOutput("scatter")),
                  uiOutput("tests"),
                  uiOutput("mct"),
-                 busyIndicator(text = "Calculation in progress..",wait = 500),
+                 #busyIndicator(text = "Calculation in progress..",wait = 500),
                  uiOutput("testeComp"),
                  uiOutput("dld"),
                  value = "panel2"), id = "inTabset"
       )
-      
+
     )
   )
 ))

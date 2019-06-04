@@ -35,7 +35,7 @@
 #' distribution with mean 0 and constant variance). The basic idea is using them to
 #' estimate the residuals of the spatially autocorrelated model in order to fit a
 #' theoretical geostatistic model to build the covariance matrix.
-#' As Pointed by Pontes & Oliveira (2002), this task can be done using the
+#' As Pointed by Pontes & Oliveira (2004), this task can be done using the
 #' following algorithm
 #'
 #' 1 - Extract the residuals from the standard model
@@ -85,21 +85,50 @@
 #' \item{design}{character string indicating the name of the experimental design.}
 #'
 #' @references
+#' NOGUEIRA, C. H., de LIMA, R. R., & de OLIVEIRA, M. S. (2013).
+#' Aprimoramento da Análise de Variância: A Influência da Proximidade Espacial.
+#' Rev. Bras. Biom, 31(3), 408-422.
+#'
+#' NOGUEIRA, Cristina Henriques et al. (2015). Modelagem espacial na análise de um plantio
+#' experimental de candeia. Rev. Bras. Biom., São Paulo, v.33, n.1, p.14-29.
+#'
 #' Pontes, José Marcelo, & Oliveira, Marcelo Silva de. (2004).
 #' An alternative proposal to the analysis of  field experiments using geostatistics.
 #' Ciência e Agrotecnologia, 28(1), 135-141.
 #'
 #' Gotway, C. A., & Cressie, N. A. (1990). A spatial analysis of variance applied
-#' to soil‐water infiltration. Water Resources Research, 26(11), 2695-2703.
+#' to soil water infiltration. Water Resources Research, 26(11), 2695-703.
 #'
-#' NOGUEIRA, Cristina Henriques et al. (2015). Modelagem espacial na análise de um plantio
-#' experimental de candeia. Rev. Bras. Biom., São Paulo, v.33, n.1, p.14-29.
+#' @examples
+#' data("crd_simulated")
+#'
+#' #Geodata object
+#' geodados <- as.geodata(crd_simulated, coords.col = 1:2, data.col = 3,
+#'                             covar.col = 4)
+#' h_max <- summary(geodados)[[3]][[2]]
+#' dist <- 0.6*h_max
+#'
+#' # Computing the variogram
+#' variograma <- spVariog(geodata = geodados,
+#'                       trend = "cte", max.dist = dist, design = "crd",
+#'                       scale = FALSE)
+#'
+#' plot(variograma, ylab = "Semivariance", xlab = "Distance")
+#'
+#' # Gaussian Model
+#' ols <- spVariofit(variograma, cov.model = "gaussian", weights = "equal",
+#'                   max.dist = dist)
+#'
+#' lines(ols, col = 1)
+#'
+#' # Compute the model and get the analysis of variance table
+#' mod <- aovGeo(ols, cutoff = 0.6)
+#' anova(mod)
 #'
 #' @importFrom MASS ginv
 #' @importFrom Matrix rankMatrix
 #' @importFrom graphics lines plot
 #' @importFrom stats AIC anova aov as.formula dist model.matrix pchisq qtukey pf
-#' @importFrom utils setTxtProgressBar txtProgressBar
 #' @import geoR
 #' @export
 aovGeo <- function(model, cutoff = 0.5, tol = 1e-3){
@@ -210,10 +239,10 @@ aovGeo.spVariofitCRD <- function(model, cutoff = 0.5, tol = 1e-3){
     psill <- psill1
     nugget <- nugget1
     int <- int + 1
-    cat(paste("Iteration number: ", int), "\n")
+    message(paste("Iteration number: ", int), "\n")
   }
 
-  pb <- txtProgressBar(style = 3)
+  #pb <- txtProgressBar(style = 3)
 
   # Modelo sem tendencia
 
@@ -221,29 +250,29 @@ aovGeo.spVariofitCRD <- function(model, cutoff = 0.5, tol = 1e-3){
 
     #Forma como apresentado na tese
     P <- i.V - i.V%*%X%*%ginv(t(X)%*%i.V%*%X)%*%t(X)%*%i.V
-    setTxtProgressBar(pb, 1/10)
+    #setTxtProgressBar(pb, 1/10)
 
     P1 <- i.V - i.V%*%X1%*%solve(t(X1)%*%i.V%*%X1)%*%t(X1)%*%i.V
-    setTxtProgressBar(pb, 2/10)
+    #setTxtProgressBar(pb, 2/10)
 
     gltrat <- rankMatrix(P1 - P)[1]
-    setTxtProgressBar(pb, 3/10)
+    #setTxtProgressBar(pb, 3/10)
 
     glres <- rankMatrix(P)[1]
-    setTxtProgressBar(pb, 4/10)
+    #setTxtProgressBar(pb, 4/10)
 
     gltot <- rankMatrix(P1)[1]
-    setTxtProgressBar(pb, 5/10)
+    #setTxtProgressBar(pb, 5/10)
 
     sqtrat <- t(Y)%*%(P1 - P)%*%Y
     Sys.sleep(0.1)
-    setTxtProgressBar(pb, 6/10)
+    #setTxtProgressBar(pb, 6/10)
 
     sqres <- t(Y)%*%(P)%*%Y
-    setTxtProgressBar(pb, 7/10)
+    #setTxtProgressBar(pb, 7/10)
 
     sqtot <- t(Y)%*%(P1)%*%Y
-    setTxtProgressBar(pb, 8/10)
+    #setTxtProgressBar(pb, 8/10)
 
     QMTrat <- sqtrat/gltrat
     QMRes <- sqres/glres
@@ -251,7 +280,7 @@ aovGeo.spVariofitCRD <- function(model, cutoff = 0.5, tol = 1e-3){
     F.trat <- QMTrat/QMRes
 
     pvalTrat <- round(pf(F.trat, gltrat, glres, lower.tail = F), 4)
-    setTxtProgressBar(pb, 9/10)
+    #setTxtProgressBar(pb, 9/10)
 
   } else {
 
@@ -262,42 +291,42 @@ aovGeo.spVariofitCRD <- function(model, cutoff = 0.5, tol = 1e-3){
     M3 <- cbind(X1, coords)
     Pc <- i.V%*%Mc%*%ginv(t(Mc)%*%i.V%*%Mc)%*%t(Mc)%*%i.V
     #Sys.sleep(0.1)
-    setTxtProgressBar(pb, 1/10)
+    #setTxtProgressBar(pb, 1/10)
 
     P2 <- i.V%*%M2%*%ginv(t(M2)%*%i.V%*%M2)%*%t(M2)%*%i.V
     #Sys.sleep(0.1)
-    setTxtProgressBar(pb, 2/10)
+    #setTxtProgressBar(pb, 2/10)
 
     P3 <- i.V%*%M3%*%solve(t(M3)%*%i.V%*%M3)%*%t(M3)%*%i.V
     #Sys.sleep(0.1)
-    setTxtProgressBar(pb, 3/10)
+    #setTxtProgressBar(pb, 3/10)
 
     sqcoord <- t(Y)%*%(Pc - P2)%*%Y
     #Sys.sleep(0.1)
-    setTxtProgressBar(pb, 4/10)
+    #setTxtProgressBar(pb, 4/10)
 
     sqtrat <- t(Y)%*%(Pc - P3)%*%Y
     #Sys.sleep(0.1)
-    setTxtProgressBar(pb, 5/10)
+    #setTxtProgressBar(pb, 5/10)
 
     sqres <- t(Y)%*%(i.V - Pc)%*%Y
     #Sys.sleep(0.1)
-    setTxtProgressBar(pb, 6/10)
+    #setTxtProgressBar(pb, 6/10)
 
     sqtot <- sqcoord + sqtrat + sqres
 
     ####Graus de liberdade###
     glres <- rankMatrix(i.V - Pc)[1]
     #Sys.sleep(0.1)
-    setTxtProgressBar(pb, 7/10)
+    #setTxtProgressBar(pb, 7/10)
 
     gltrat <- rankMatrix(Pc - P3)[1]
     #Sys.sleep(0.1)
-    setTxtProgressBar(pb, 8/10)
+    #setTxtProgressBar(pb, 8/10)
 
     glcoord <- rankMatrix(Pc - P2)[1]
     #Sys.sleep(0.1)
-    setTxtProgressBar(pb, 9/10)
+    #setTxtProgressBar(pb, 9/10)
 
     gltot <- glres + gltrat + glcoord
 
@@ -322,7 +351,7 @@ aovGeo.spVariofitCRD <- function(model, cutoff = 0.5, tol = 1e-3){
   resid <- as.numeric(erro - compEsp)
 
   #Sys.sleep(0.1)
-  setTxtProgressBar(pb, 10/10)
+  #setTxtProgressBar(pb, 10/10)
 
 
   # Lista que armazenara a saida
@@ -343,7 +372,7 @@ aovGeo.spVariofitCRD <- function(model, cutoff = 0.5, tol = 1e-3){
                    p.value = c(pvalTrat),
                    residuals = resid, params = c(sigsq = psill, phi = phi, tausq = nugget),
                    type = "cte", model = covMod, data = dados, des.mat = model$des.mat,
-                   beta = theta_dep, n = n, vcov =  sigma, design = "CRD")
+                   beta = theta_dep, n = n, vcov =  sigma, design = "crd")
   }
   class(output) <- c("GEOanova", "GEOcrd")
   return(output)
@@ -443,7 +472,7 @@ anova.GEOcrd <- function(object, compare = FALSE, ...) {
     rownames(anova.p1) <- c("Coordinates", "Treatment", "Residuals", "Total")
     print(anova.p1)
     cat("---", "\n")
-    cat("Signif. codes: ", attr(star1, "legend"))
+    cat("Signif. codes: ", attr(star1, "legend"), "\n")
 
     if(compare == TRUE){
       cat("\n", "\n")
@@ -472,7 +501,7 @@ anova.GEOcrd <- function(object, compare = FALSE, ...) {
     rownames(anova.p1) <- c("Treatment", "Residuals", "Total")
     print(anova.p1)
     cat("---", "\n")
-    cat("Signif. codes: ", attr(star, "legend"))
+    cat("Signif. codes: ", attr(star, "legend"),"\n")
 
     if(compare == TRUE){
       cat("\n", "\n")
@@ -508,7 +537,7 @@ aovGeo.spVariofitRCBD <- function(model, cutoff = 0.5, tol = 1e-3){
   nugget <- model$mod$nugget
   psill <- model$mod$cov.pars[1]
   phi <- model$mod$cov.pars[2]
-  trend <- model$trend
+  trend <- "cte"
 
   #matriz de covariancia espacial
   sigma <- varcov.spatial(coords = coords, cov.model = covMod, nugget = nugget,
@@ -583,46 +612,46 @@ aovGeo.spVariofitRCBD <- function(model, cutoff = 0.5, tol = 1e-3){
     psill <- psill1
     nugget <- nugget1
     int <- int + 1
-    cat(paste("Iteration number: ", int), "\n")
+    message(paste("Iteration number: ", int), "\n")
   }
 
-  pb <- txtProgressBar(style = 3)
+  #pb <- txtProgressBar(style = 3)
 
   #Obtendo a soma de quadrados
   P1 <- i.V%*%X1%*%solve(t(X1)%*%i.V%*%X1)%*%t(X1)%*%i.V
   P <- i.V%*%X%*%ginv(t(X)%*%i.V%*%X)%*%t(X)%*%i.V
-  setTxtProgressBar(pb, 1/10)
+  #setTxtProgressBar(pb, 1/10)
 
   R <- i.V-P1
   P2 <- R%*%X2%*%ginv(t(X2)%*%R%*%X2)%*%t(X2)%*%R
-  setTxtProgressBar(pb, 2/10)
+  #setTxtProgressBar(pb, 2/10)
 
   SQT <- t(Y)%*%(i.V-P1)%*%Y
   SQRes <- t(Y)%*%(i.V-P)%*%Y
-  setTxtProgressBar(pb, 3/10)
+  #setTxtProgressBar(pb, 3/10)
 
   SQTrat <- t(Y)%*%(P2)%*%Y
   SQBloco <- t(Y)%*%(P-P1-P2)%*%Y
-  setTxtProgressBar(pb, 4/10)
+  #setTxtProgressBar(pb, 4/10)
 
   #Graus de liberdade
   glt <- rankMatrix(i.V-P1)[1] #Total
-  setTxtProgressBar(pb, 5/10)
+  #setTxtProgressBar(pb, 5/10)
 
   gle <- rankMatrix(i.V-P)[1]  #Erro
-  setTxtProgressBar(pb, 6/10)
+  #setTxtProgressBar(pb, 6/10)
 
   gltra <- rankMatrix(P2)[1] #tratamento
-  setTxtProgressBar(pb, 7/10)
+  #setTxtProgressBar(pb, 7/10)
 
   glblo <- rankMatrix(P-P1-P2)[1] #Bloco
-  setTxtProgressBar(pb, 8/10)
+  #setTxtProgressBar(pb, 8/10)
 
   #Quadrados médios
   QMTrat <- SQTrat/gltra
   QMRes <- SQRes/gle
   QMBlo <- SQBloco/glblo
-  setTxtProgressBar(pb, 9/10)
+  #setTxtProgressBar(pb, 9/10)
 
   #Estatística F
   F0 <- QMTrat/QMRes
@@ -639,7 +668,7 @@ aovGeo.spVariofitRCBD <- function(model, cutoff = 0.5, tol = 1e-3){
   i.sig <- chol2inv(chol(sigma))
   compEsp <- sig0%*%i.sig%*%erro
   resid <- as.numeric(erro-compEsp)
-  setTxtProgressBar(pb, 10/10)
+  #setTxtProgressBar(pb, 10/10)
 
   output <- list(DF = c(gltra, glblo, gle, glt),
                  SS = c(SQTrat, SQBloco, SQRes, SQT),
@@ -647,8 +676,8 @@ aovGeo.spVariofitRCBD <- function(model, cutoff = 0.5, tol = 1e-3){
                  Fc = c(F0, F0b),
                  p.value = c(pvalTrat, pvalBlo),
                  residuals = resid, params = c(sigsq = psill, phi = phi, tausq = nugget),
-                 type = "trend", model = covMod, data = dados, des.mat = model$des.mat,
-                 beta = theta_dep, n = n, vcov =  sigma, design = "RCBD")
+                 type = "cte", model = covMod, data = dados, des.mat = model$des.mat,
+                 beta = theta_dep, n = n, vcov =  sigma, design = "rcbd")
 
   class(output) <- c("GEOanova", "GEOrcbd")
 
@@ -716,7 +745,7 @@ anova.GEOrcbd <- function(object, compare = FALSE, ...) {
   rownames(anova.p1) <- c("Treatment","Block","Residuals","Total")
   print(anova.p1)
   cat("---","\n")
-  cat("Signif. codes: ",attr(star1, "legend"))
+  cat("Signif. codes: ",attr(star1, "legend"), "\n")
 
   if(compare == TRUE){
     cat("\n", "\n")

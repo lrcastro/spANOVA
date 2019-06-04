@@ -3,17 +3,13 @@
 \docType{data}
 \name{crd_simulated}
 \alias{crd_simulated}
-\title{crd_simulated dataset example}
+\title{Simulated data set for CRD}
 \description{
-crd_simulated dataset example
+Simulated data set for CRD
 }
 \details{
-crd_simulated
-}
-\references{
-\url{data_blah.com}
+This dataset was simulated under a gaussian random field containing 15 treatments and 8 replication with mean 10.
 }
 \author{
-My Name \email{blahblah@roxygen.org}
+Lucas Castro \email{lrcastro@estudante.ufla.br}
 }
-\keyword{data}

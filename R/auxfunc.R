@@ -13,6 +13,10 @@
 #' @return
 #' The matrix of contrasts with treatments in row names is returned
 #'
+#' @examples
+#' x <- c(10, 5, 8, 4, 12, 18)
+#' contr.tuk(x)
+#'
 #' @export
 contr.tuk <- function(x){
   k <- length(x)

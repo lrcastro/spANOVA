@@ -23,6 +23,29 @@
 #' \item{des.mat}{the design matrix}
 #' \item{trend}{a character specifying the type of spatial trend}
 #'
+#' @examples
+#' data("crd_simulated")
+#' dados <- crd_simulated
+#'
+#' #Geodata object
+#' geodados <- as.geodata(dados, coords.col = 1:2, data.col = 3,
+#'                       covar.col = 4)
+#' h_max <- summary(geodados)[[3]][[2]]
+#' dist <- 0.6*h_max
+#'
+#' # Computing the variogram
+#' variograma <- spVariog(geodata = geodados,
+#'                       trend = "cte", max.dist = dist, design = "crd",
+#'                       scale = FALSE)
+#'
+#' plot(variograma, ylab = "Semivariance", xlab = "Distance")
+#'
+#' # Spherical Model
+#' ols1 <- spVariofit(variograma, cov.model = "spherical", weights = "equal",
+#'                   max.dist = dist)
+#' lines(ols1)
+#'
+#'
 #' @seealso
 #' \code{\link[geoR]{variofit}}
 #' @export
@@ -31,8 +54,8 @@ spVariofit <- function(x, ...) {
 }
 
 #' @export
-#' @method spVariofit spVariogCRD
-spVariofit.spVariogCRD <- function(x, ...){
+#' @method spVariofit spVariogcrd
+spVariofit.spVariogcrd <- function(x, ...){
   mod <- variofit(x$vario.res, ...)
   result <- list(mod = mod, data.geo = x$data.geo, des.mat = x$des.mat, trend = x$trend)
   class(result) <- c("spVariofit", "spVariofitCRD")
@@ -40,8 +63,8 @@ spVariofit.spVariogCRD <- function(x, ...){
 }
 
 #' @export
-#' @method spVariofit spVariogRCBD
-spVariofit.spVariogRCBD <- function(x, ...){
+#' @method spVariofit spVariogrcbd
+spVariofit.spVariogrcbd <- function(x, ...){
   mod <- variofit(x$vario.res, ...)
   result <- list(mod = mod, data.geo = x$data.geo, des.mat = x$des.mat, trend = x$trend)
   class(result) <- c("spVariofit", "spVariofitRCBD")

@@ -18,16 +18,22 @@ output$geoUI <- renderUI({
                 value = 0.50),
     #strong("Initial Parameters Values"),
     #checkboxInput("defaultSearch", "Default Search", TRUE),
-    #uiOutput("iniParams"),
-    strong("Parameter Estimates"),
-    busyIndicator(text = "Calculation in progress..",wait = 500),
+    strong("Parameter Estimation"),
+    selectInput("estMethod", "Method", c("Ordinary Least Squares" = 'equal',
+                                         "Weighted Least Squares" = 'cressie'),
+                selected = "equal"),
+    selectInput("iniPar", "Initial Values",
+                c("Default Search" = 'default', "Set Initial Values" = 'values'),
+                selected = "default"),
+    uiOutput("iniParams"),
+    #busyIndicator(text = "Calculation in progress..",wait = 500),
     textOutput("psillEst"),
     textOutput("RangeEst"),
     textOutput("NuggetEst"),
     textOutput("SillEst"),
     tags$hr(),
-    div(style="display: inline-block;vertical-align:top; width: 230px;",bsButton("runS", "Compute Semivariogram",icon=icon("caret-right"), style="default")),
-    div(style="display: inline-block; vertical-align:top; width: 10px;",bsButton("runA", "Run Analysis",icon=icon("ban"), style="danger",disabled = T))
+    #div(style="display: inline-block;vertical-align:top; width: 230px;",bsButton("runS", "Compute Semivariogram",icon=icon("caret-right"), style="default")),
+    div(style="display: inline-block; vertical-align:top; width: 10px;",bsButton("runA", "Run Analysis",icon=icon("success"), style="success",disabled = F))
     #div(style="display: inline-block;vertical-align:top; width: 150px;",downloadButton("report", "Download report"))
     #radioButtons('format', 'Save as', c('PDF', 'DOCX'),
     #           inline = TRUE,selected = 'PDF')
@@ -131,7 +137,7 @@ output$dataTBS<-renderUI({
                      "comma"=','),'.')
       ))} else {
       return(tagList(
-        selectInput("loadedData", choices = c("crd_simulated", "candeia"),
+        selectInput("loadedData", choices = c("crd_simulated"),
                     selected = "crd_simulated", label = "Choose a dataset:"),
         div(style = "display: inline-block;vertical-align:top; width: 230px;",
             bsButton("runD", "Ok",icon = icon("caret-right"),
@@ -149,19 +155,19 @@ output$PlotGeo<-renderUI({
       tagList(
         fluidRow(
           column(6,
-                 busyIndicator(text = "Calculation in progress..",wait = 500),
+                 #busyIndicator(text = "Calculation in progress..",wait = 500),
                  plotOutput("semivariog")),
           column(6,
-                 busyIndicator(text = "Calculation in progress..",wait = 500),
+                 #busyIndicator(text = "Calculation in progress..",wait = 500),
                  plotOutput("chartQt")
           )
         ),
         fluidRow(
           column(6,
-                 busyIndicator(text = "Calculation in progress..",wait = 500),
+                 #busyIndicator(text = "Calculation in progress..",wait = 500),
                  plotOutput("chart2")),
           column(6,
-                 busyIndicator(text = "Calculation in progress..",wait = 500),
+                 #busyIndicator(text = "Calculation in progress..",wait = 500),
                  plotOutput("chart3")
           )
         )
@@ -171,16 +177,16 @@ output$PlotGeo<-renderUI({
         tagList(
           fluidRow(
             column(12,
-                   busyIndicator(text = "Calculation in progress..",wait = 500),
+                   #busyIndicator(text = "Calculation in progress..",wait = 500),
                    plotOutput("chartQt")
             )
           ),
           fluidRow(
             column(6,
-                   busyIndicator(text = "Calculation in progress..",wait = 500),
+                   #busyIndicator(text = "Calculation in progress..",wait = 500),
                    plotOutput("chart2")),
             column(6,
-                   busyIndicator(text = "Calculation in progress..",wait = 500),
+                   #busyIndicator(text = "Calculation in progress..",wait = 500),
                    plotOutput("chart3")
             )
           )

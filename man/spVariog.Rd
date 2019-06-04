@@ -6,7 +6,7 @@
 \usage{
 spVariog(geodata, resp = NULL, treat = NULL, block = NULL, coords = NULL,
 data = NULL, trend = c("cte", "1st"), scale = FALSE, max.dist,
-design = c("CRD", "RCBD"), ...)
+design = c("crd", "rcbd"), ...)
 }
 \arguments{
 \item{geodata}{an object of class \code{geodata} in which the response variable
@@ -41,8 +41,8 @@ See ‘Details’.}
 \item{max.dist}{numerical value defining the maximum distance for the variogram.
 See \code{\link[geoR]{variog}} documentation for additional information.}
 
-\item{design}{type of experimental design. "CRD" corresponds to Completely Randomized
-Design and "RCBD" corresponds to Randomized Complete Block Design.}
+\item{design}{type of experimental design. "crd" corresponds to Completely Randomized
+Design and "rcbd" corresponds to Randomized Complete Block Design.}
 
 \item{...}{further arguments to be passed to \code{\link[geoR]{variog}} function.}
 }
@@ -70,6 +70,24 @@ chosen, and \eqn{\beta} is the vector of coefficients estimated by the linear mo
 
 If scale = TRUE the spatial coordinates will be scaled for numerical reasons. The scale is made by
 subtracting the minimum spatial coordinate value from all others.
+}
+\examples{
+data("crd_simulated")
+dados <- crd_simulated
+
+#Geodata object
+geodados <- as.geodata(dados, coords.col = 1:2, data.col = 3,
+                            covar.col = 4)
+h_max <- summary(geodados)[[3]][[2]]
+dist <- 0.6*h_max
+
+# Computing the variogram
+variograma <- spVariog(geodata = geodados,
+                      trend = "cte", max.dist = dist, design = "crd",
+                      scale = FALSE)
+
+plot(variograma, ylab = "Semivariance", xlab = "Distance")
+
 }
 \seealso{
 \code{\link[geoR]{variog}}

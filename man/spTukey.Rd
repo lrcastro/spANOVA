@@ -22,7 +22,9 @@ spTukey(x, sig.level = 0.05)
 level to use.}
 }
 \value{
-a data frame containing the mean and its group.
+a data frame containing the original mean, the spatially filtered mean and its group.
+For the class GEOanova, the spatial dependence is filtered out using geostatistics,
+while for the class SARanova the adjusted response based on SAR model is employed.
 }
 \description{
 Perform multiple comparisons of means treatments based on the Studentized range
@@ -45,6 +47,36 @@ where \eqn{HSD_i = q(\alpha, k, \nu) * sqrt(0.5*{w}_ii)} and
 \eqn{k} is the number of treatments, \eqn{\alpha} is the level of significance,
 \eqn{\nu} is the degree of freedom of the model, \eqn{{w}_ii} is the variance of
 the i-th contrast.
+}
+\examples{
+data("crd_simulated")
+
+#Geodata object
+geodados <- as.geodata(crd_simulated, coords.col = 1:2, data.col = 3,
+                      covar.col = 4)
+h_max <- summary(geodados)[[3]][[2]]
+dist <- 0.6*h_max
+
+# Computing the variogram
+variograma <- spVariog(geodata = geodados,
+                      trend = "cte", max.dist = dist, design = "crd",
+                      scale = FALSE)
+
+plot(variograma, ylab = "Semivariance", xlab = "Distance")
+
+# Gaussian Model
+ols <- spVariofit(variograma, cov.model = "gaussian", weights = "equal",
+                 max.dist = dist)
+
+lines(ols, col = 1)
+
+# Compute the model and get the analysis of variance table
+mod <- aovGeo(ols, cutoff = 0.6)
+
+# Tukey's HSD
+spTukey(mod)
+
+
 }
 \references{
 NOGUEIRA, C. H. Testes para comparações múltiplas de

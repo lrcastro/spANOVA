@@ -21,14 +21,42 @@
 #'
 #' @return
 #' a data frame containing the means and its group
+#' @examples
+#'
+#' \dontrun{
+#' data("crd_simulated")
+#'
+#' #Geodata object
+#' geodados <- as.geodata(crd_simulated, coords.col = 1:2, data.col = 3,
+#'                       covar.col = 4)
+#' h_max <- summary(geodados)[[3]][[2]]
+#' dist <- 0.6*h_max
+#'
+#' # Computing the variogram
+#' variograma <- spVariog(geodata = geodados,
+#'                       trend = "cte", max.dist = dist, design = "crd",
+#'                       scale = FALSE)
+#'
+#' plot(variograma, ylab = "Semivariance", xlab = "Distance")
+#'
+#' # Gaussian Model
+#' ols <- spVariofit(variograma, cov.model = "gaussian", weights = "equal",
+#'                  max.dist = dist)
+#'
+#'
+#' # Compute the model and get the analysis of variance table
+#' mod <- aovGeo(ols, cutoff = 0.6)
+#'
+#' # Scott-Knott clustering algorithm
+#' spMVT(mod)
+#' }
+#'
 #'
 #' @references
 #' NOGUEIRA, C. H. Testes para comparações múltiplas de
 #' médias em experimentos com tendência e dependência espacial.
 #' 142 f. Tese (Doutorado em Estatística e Experimentação
 #' Agropecuária) | Universidade Federal de Lavras, Lavras, 2017
-#'
-#'
 #'
 #' @export
 spScottKnott <- function(x, sig.level = 0.05) {
@@ -45,8 +73,9 @@ spScottKnott.SARanova <- function(x, sig.level = 0.05) {
                                              which = 'treat',
                                              dispersion = 's',
                                              sig.level = sig.level))))
-  out <- out[,-1]
-  colnames(out) <- c("means", "groups")
+  mgb.orig <- round(tapply(x$y_orig, x$modelAdj$model[,2], mean),3)
+  out <- cbind(sort(mgb.orig, decreasing = T), out[,-1])
+  colnames(out) <- c("mean","filtered.mean", "groups")
   cat("Scott-Knott Test","\n")
   cat("\n")
   cat("Treatments with the same letter are not significantly different at a", sig.level * 100,"%" ,"significance level.", "\n")
@@ -64,6 +93,7 @@ spScottKnott.GEOanova <- function(x, sig.level = 0.05){
   resp <- dados$data
   trat <- dados$covariate[ ,1]
   D <- dados$coords
+  #design <- x$des
 
   # Atributos do modelo geoestatistico
   covMod <- x$mod
@@ -78,11 +108,12 @@ spScottKnott.GEOanova <- function(x, sig.level = 0.05){
   n <- sum(r) ## n de observacoes
 
   # Matriz de incidencia dos tratamentos
-  if(trend == "cte"){
-    X2 <- x$des.mat[ ,-1]
-  }else{
-    X2 <- x$des.mat[ ,2:(k+1)]
-  }
+  #if(trend == "cte"){
+    #X2 <- x$des.mat[ ,-1]
+  #}else{
+   X2 <- x$des.mat[ ,2:(k+1)]
+  #}
+
 
   ## sigma: a matriz de covariancia espacial
   sigma <- varcov.spatial(coords = D, cov.model = covMod, nugget = nugget,
@@ -214,7 +245,11 @@ spScottKnott.GEOanova <- function(x, sig.level = 0.05){
     else { M[i] <- letters[j]
     j <- j + 1 }
   }
-  saida <- data.frame(means = unname(round(ordertest[, 2],3)), groups = M,
+
+  orig.mean <- tapply(resp, trat, mean)
+  saida <- data.frame(mean = round(orig.mean[order(Teste[, 2], decreasing = TRUE)], 3) ,
+                      filtered.mean = unname(round(ordertest[, 2],3)),
+                      groups = M,
                       row.names = ordertest[, 1])
   cat("Scott-Knott Test","\n")
   cat("\n")

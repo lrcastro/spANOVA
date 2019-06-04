@@ -187,17 +187,17 @@ server <- function(input, output, session) {
 
 
   # Esse trecho cria o objeto spvariog
-  semivar <- eventReactive(input$runS, {
+  semivar <- reactive({
     if(input$spem == "geoest"){
       validate(
         need(input$dm != "", "Please configure modelling controls")
       )
       if(input$crdR != ""){
         b <- spVariog(geodata = geodados(), trend = input$trend, max.dist = dist.max(),
-                      design = "CRD", scale = input$scaleCoordCRD)
+                      design = "crd", scale = input$scaleCoordCRD)
       } else {
         b <- spVariog(geodata = geodados(), trend = input$trend, max.dist = dist.max(),
-                      design = "RCBD", scale = input$scaleCoordRCBD)
+                      design = "rcbd", scale = input$scaleCoordRCBD)
       }
       return(b)
     }
@@ -205,10 +205,17 @@ server <- function(input, output, session) {
 
 
   # Esse trecho faz o ajuste do modelo via OLS
-  fit <- eventReactive(input$runS,{
+  fit <- reactive({
     if(input$spem == "geoest"){
-      spVariofit(semivar(), max.dist = dist.max(), cov.model = input$Thmodel,
-                 weights = "equal")
+      if(input$iniPar != "default"){
+        req(input$Nug)
+        spVariofit(semivar(), max.dist = dist.max(), cov.model = input$Thmodel,
+                   weights = input$estMethod, nugget = as.numeric(input$Nug),
+                   ini.cov.pars = c(as.numeric(input$Sil), as.numeric(input$Ran)))
+      } else {
+        spVariofit(semivar(), max.dist = dist.max(), cov.model = input$Thmodel,
+                   weights = input$estMethod)
+      }
     }
   })
 
@@ -320,16 +327,16 @@ server <- function(input, output, session) {
 
 
   # Observe event para o botao run analysis
-  observeEvent(input$runS,({
-    updateButton(session, "runA", style = "success",disabled = FALSE ,icon = icon("check"))
-  }))
+  # observeEvent(input$runS,({
+  #   updateButton(session, "runA", style = "success",disabled = FALSE ,icon = icon("check"))
+  # }))
 
-  # Quando clicar em compute semivariogram mudar para os graficos
-  observeEvent(input$runS,({
-    updateTabsetPanel(session, "inTabset",
-                      selected = "panel1")
-    # write.table(input$runA,"run.txt")
-  }))
+  # # Quando clicar em compute semivariogram mudar para os graficos
+  # observeEvent(input$runA,({
+  #   updateTabsetPanel(session, "inTabset",
+  #                     selected = "panel1")
+  #   # write.table(input$runA,"run.txt")
+  # }))
 
   # Quando clicar em run analysis mudar para o controles de modelagem
   observeEvent(input$runA,({
@@ -450,9 +457,46 @@ server <- function(input, output, session) {
     # Testes
     sht <- shapiro.test(an()$residuals)$p.value
 
+    # Teste Moran.I
+    # obtendo as coordenadas
+    if(input$dataType=='ifd'){
+      coordenadasCRD <- cbind(myData()[,which(names(myData()) == input$xcoordCrd)],
+                              myData()[,which(names(myData()) == input$ycoordCrd)])
+      coordenadsRCBD <- cbind(myData()[,which(names(myData()) == input$xcoordRbd)],
+                              myData()[,which(names(myData()) == input$ycoordRbd)])
+      if(input$expd == "crd"){
+        Xcoordinates <-(coordenadasCRD[,1])-min(coordenadasCRD[,1])
+        Ycoordinates <-(coordenadasCRD[,2])-min(coordenadasCRD[,2])
+      } else {
+        Xcoordinates <-(coordenadsRCBD[,1])-min(coordenadsRCBD[,1])
+        Ycoordinates <-(coordenadsRCBD[,2])-min(coordenadsRCBD[,2])
+      }
+    } else {
+      coordenadasCRD <- cbind(myData2()[,which(names(myData2()) == input$xcoordCrd)],
+                              myData2()[,which(names(myData2()) == input$ycoordCrd)])
+      coordenadsRCBD <- cbind(myData2()[,which(names(myData2()) == input$xcoordRbd)],
+                              myData2()[,which(names(myData2()) == input$ycoordRbd)])
+      if(input$expd == "crd"){
+        Xcoordinates <-(coordenadasCRD[,1])-min(coordenadasCRD[,1])
+        Ycoordinates <-(coordenadasCRD[,2])-min(coordenadasCRD[,2])
+      } else {
+        Xcoordinates <-(coordenadsRCBD[,1])-min(coordenadsRCBD[,1])
+        Ycoordinates <-(coordenadsRCBD[,2])-min(coordenadsRCBD[,2])
+      }
+    }
+
+    # Calculando o teste
+    coordinates <-cbind(Xcoordinates,Ycoordinates)
+    distance <- as.matrix(dist(coordinates))
+    distance.inv <- distance^(-1)
+    diag(distance.inv) <- 0
+    moran.pvalue <- Moran.I(an()$residuals, distance.inv, alt = "g")$p.value
+
+
     # Tabela
-    tbla <- data.frame(Assumption = c("Normality"),
-                     Test = c("Shapiro-Wilk"), P.value=c(sht))
+    tbla <- data.frame(Assumption = c("Normality", "Independence"),
+                       Test = c("Shapiro-Wilk", "Moran-I"),
+                       P.value=c(sht, moran.pvalue))
     return(tbla)
   })
 
@@ -466,6 +510,11 @@ server <- function(input, output, session) {
   output$qqplotNorm <- renderPlot({
     qqnorm(an()$residuals)
     qqline(an()$residuals)
+  })
+
+  # Scatter-plot residuals
+  output$scatter <- renderPlot({
+    plot(an()$residuals, ylab = "Residuals")
   })
 
 
@@ -489,7 +538,7 @@ server <- function(input, output, session) {
   output$mct<-renderUI({
       tagList(
         div(style="display: inline-block;vertical-align:center; width: 230px",
-            selectInput("testeCM","Choose a multiple comparison test:",
+            selectInput("testeCM","Multiple-comparison procedure:",
                         choices = c("Tukey","Mutivariate T", "Scott-Knott"),
                         selected = "Scott-Knott")),
 
@@ -614,6 +663,20 @@ server <- function(input, output, session) {
       div(style="display: inline-block;vertical-align:top; width: 150px;",
           downloadButton("report", "Download report"))
     )
+  })
+
+  # Selecao do metodo de estimacao
+  output$iniParams <- renderUI({
+    if(input$iniPar == "values"){
+      tagList(
+        sliderInput("Nug", "Nugget", min = 0, max = round(2*max(semivar()$vario.res$v),1),
+                    0.1*max(semivar()$vario.res$v),0.1),
+        sliderInput("Sil", "Sill",  min = 0, max = round(2*max(semivar()$vario.res$v),1),
+                    0.8*max(semivar()$vario.res$v),0.1),
+        sliderInput("Ran", "Range", min = 0, max = round(2*max(semivar()$vario.res$u),1),
+                    max(semivar()$vario.res$u)/3,0.1)
+      )
+    }
   })
 
 }

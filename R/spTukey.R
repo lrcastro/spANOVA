@@ -31,13 +31,44 @@
 #' the i-th contrast.
 #'
 #' @return
-#' a data frame containing the mean and its group.
+#' a data frame containing the original mean, the spatially filtered mean and its group.
+#' For the class GEOanova, the spatial dependence is filtered out using geostatistics,
+#' while for the class SARanova the adjusted response based on SAR model is employed.
 #'
 #' @references
 #' NOGUEIRA, C. H. Testes para comparações múltiplas de
 #' médias em experimentos com tendência e dependência espacial.
 #' 142 f. Tese (Doutorado em Estatística e Experimentação
 #' Agropecuária) | Universidade Federal de Lavras, Lavras, 2017
+#'
+#' @examples
+#' data("crd_simulated")
+#'
+#' #Geodata object
+#' geodados <- as.geodata(crd_simulated, coords.col = 1:2, data.col = 3,
+#'                       covar.col = 4)
+#' h_max <- summary(geodados)[[3]][[2]]
+#' dist <- 0.6*h_max
+#'
+#' # Computing the variogram
+#' variograma <- spVariog(geodata = geodados,
+#'                       trend = "cte", max.dist = dist, design = "crd",
+#'                       scale = FALSE)
+#'
+#' plot(variograma, ylab = "Semivariance", xlab = "Distance")
+#'
+#' # Gaussian Model
+#' ols <- spVariofit(variograma, cov.model = "gaussian", weights = "equal",
+#'                  max.dist = dist)
+#'
+#' lines(ols, col = 1)
+#'
+#' # Compute the model and get the analysis of variance table
+#' mod <- aovGeo(ols, cutoff = 0.6)
+#'
+#' # Tukey's HSD
+#' spTukey(mod)
+#'
 #'
 #' @export
 spTukey <- function(x, sig.level = 0.05) {
@@ -54,8 +85,10 @@ spTukey.SARcrd <- function(x, sig.level = 0.05){
   exp_tukey <- TukeyHSD(x$modelAdj, conf.level = 1 - sig.level)
   let <- multcompLetters3(2, 1, exp_tukey$treat[,"p adj"], x$modelAdj$model)
   mbg <- tapply(x$modelAdj$model[,1], x$modelAdj$model[,2], mean)
-  result <- data.frame(means = round(mbg[order(mbg,decreasing = TRUE)],3) ,
-                       groups = let$Letters[order(mbg,decreasing = TRUE)])
+  mgb.orig <- round(tapply(x$y_orig, x$modelAdj$model[,2], mean),3)
+  result <- data.frame(mean = round(mgb.orig[order(mbg, decreasing = TRUE)],3),
+                       filtered.mean = round(mbg[order(mbg,decreasing = TRUE)],3) ,
+                       groups = let$Letters)
   cat("Tukey's Test","\n")
   cat("\n")
   cat("Treatments with the same letter are not significantly different at a", sig.level * 100,"%" ,"significance level.", "\n")
@@ -73,7 +106,7 @@ spTukey.SARrcbd <- function(x, sig.level = 0.05){
   let <- multcompLetters3(2, 1, exp_tukey$treat[,"p adj"], x$modelAdj$model)
   mbg <- tapply(x$modelAdj$model[,1], x$modelAdj$model[,2], mean)
   result <- data.frame(means = round(mbg[order(mbg,decreasing = TRUE)],3) ,
-                       groups = let$Letters[order(mbg,decreasing = TRUE)])
+                       groups = let$Letters)
   cat("Tukey's Test","\n")
   cat("\n")
   cat("Treatments with the same letter are not significantly different at a", sig.level * 100,"%" ,"significance level.", "\n")
@@ -105,12 +138,30 @@ spTukey.GEOanova <- function(x, sig.level = 0.05){
   r <- tapply(Y, trat, "length") ## vetor com n de repeticoes
   n <- sum(r) ## n de observações
 
-  # Matriz de incidencia dos tratamentos
-  if(trend == "cte"){
-    X2 <- x$des.mat[ ,-1]
-  }else{
-    X2 <- x$des.mat[ ,2:(k+1)]
-  }
+  # # Matriz de incidencia dos tratamentos
+  # row <- c(0)
+  # for (i in 1:k){
+  #   row[i+1] = sum(r[1:i])
+  # }
+  #
+  # X2 <- matrix(0,n,k)
+  # for(i in 1:n){
+  #   for(j in 1:k){
+  #     if(i > row[j] & i<= row[j+1]) X2[i,j] <- 1
+  #   }
+  # }
+  #
+  # if(trend != "cte"){
+  #   X1 <- rep(1, n)
+  #   X2 <- as.matrix(cbind(X1, X2, D))
+  # }
+
+  # if(trend == "cte"){
+  #
+  #   #X2 <- x$des.mat[ ,-1]
+  # }else{
+  X2 <- x$des.mat[ ,2:(k+1)]
+  # }
 
   ## sigma: a matriz de covariancia espacial
   sigma <- varcov.spatial(coords = D, cov.model = covMod, nugget = nugget,
@@ -186,8 +237,10 @@ spTukey.GEOanova <- function(x, sig.level = 0.05){
   letras <- tukey$Letters
 
 
+  orig.mean <- tapply(resp, trat, mean)
 
-  print.tuk <- data.frame(means = round(unname(sort(media, decreasing = TRUE)),3),
+  print.tuk <- data.frame(mean = round(orig.mean[order(media, decreasing = TRUE)],3),
+                          filtered.mean = round(unname(sort(media, decreasing = TRUE)),3),
                           groups = unname(letras),
                           row.names =  unique(trat)[order(media,decreasing = TRUE)])
  # print.tuk

@@ -66,7 +66,7 @@ The geostatistical modeling is based on the residuals of the standard model
 distribution with mean 0 and constant variance). The basic idea is using them to
 estimate the residuals of the spatially autocorrelated model in order to fit a
 theoretical geostatistic model to build the covariance matrix.
-As Pointed by Pontes & Oliveira (2002), this task can be done using the
+As Pointed by Pontes & Oliveira (2004), this task can be done using the
 following algorithm
 
 1 - Extract the residuals from the standard model
@@ -93,14 +93,45 @@ distance in the computation of the residual variogram described in step 6
 In presence of spatial trend, the model is modified
 in order to include the effect of the spatial coordinates.
 }
+\examples{
+data("crd_simulated")
+
+#Geodata object
+geodados <- as.geodata(crd_simulated, coords.col = 1:2, data.col = 3,
+                            covar.col = 4)
+h_max <- summary(geodados)[[3]][[2]]
+dist <- 0.6*h_max
+
+# Computing the variogram
+variograma <- spVariog(geodata = geodados,
+                      trend = "cte", max.dist = dist, design = "crd",
+                      scale = FALSE)
+
+plot(variograma, ylab = "Semivariance", xlab = "Distance")
+
+# Gaussian Model
+ols <- spVariofit(variograma, cov.model = "gaussian", weights = "equal",
+                  max.dist = dist)
+
+lines(ols, col = 1)
+
+# Compute the model and get the analysis of variance table
+mod <- aovGeo(ols, cutoff = 0.6)
+anova(mod)
+
+}
 \references{
+NOGUEIRA, C. H., de LIMA, R. R., & de OLIVEIRA, M. S. (2013).
+Aprimoramento da Análise de Variância: A Influência da Proximidade Espacial.
+Rev. Bras. Biom, 31(3), 408-422.
+
+NOGUEIRA, Cristina Henriques et al. (2015). Modelagem espacial na análise de um plantio
+experimental de candeia. Rev. Bras. Biom., São Paulo, v.33, n.1, p.14-29.
+
 Pontes, José Marcelo, & Oliveira, Marcelo Silva de. (2004).
 An alternative proposal to the analysis of  field experiments using geostatistics.
 Ciência e Agrotecnologia, 28(1), 135-141.
 
 Gotway, C. A., & Cressie, N. A. (1990). A spatial analysis of variance applied
-to soil‐water infiltration. Water Resources Research, 26(11), 2695-2703.
-
-NOGUEIRA, Cristina Henriques et al. (2015). Modelagem espacial na análise de um plantio
-experimental de candeia. Rev. Bras. Biom., São Paulo, v.33, n.1, p.14-29.
+to soil water infiltration. Water Resources Research, 26(11), 2695-703.
 }

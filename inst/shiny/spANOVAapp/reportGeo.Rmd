@@ -42,20 +42,36 @@ qqnorm(res)
 qqline(res)
 ```
 
+```{r, echo = FALSE}
+res <- params$modelGeo$residuals
+plot(res, ylab = "Residuals")
+```
+
+\newpage
 
 ```{r, echo = FALSE}
 knitr::kable(params$table)
 ```
 
 ```{r, echo = FALSE}
-  if (params$table$P.value < 0.05) {
+  if (params$table$P.value[1] < 0.05) {
     textRes <- "According to Shapiro-Wilk normality test at 5% of significance, residuals cannot be considered normal."
   }else {
     textRes <- "According to Shapiro-Wilk normality test at 5% of significance, residuals can be considered normal."
   }
 ```
 
-`r textRes`
+```{r, echo = FALSE}
+  if (params$table$P.value[2] < 0.05) {
+    textRes2 <- "According to Moran I test at 5% of significance, there is spatial correlation among the residuals."
+  }else {
+    textRes2 <- "According to Moran I test at 5% of significance, there is no spatial correlation among the residuals."
+  }
+```
+
+`r textRes`   
+
+`r textRes2`    
 
 ## Multiple Comparison Procedure
 
