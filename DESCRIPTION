@@ -1,11 +1,37 @@
 Package: spANOVA
 Type: Package
-Title: An R package to perform analysis of experiments with spatial dependence
-Version: 0.1.0
+Title: An R package to perform analysis of experiments with spatially correlated errors
+Version: 0.99.0
 Author: Lucas Roberto de Castro, Diogo Francisco Rossoni, Renato Ribeiro de Lima
 Maintainer: The package maintainer <yourself@somewhere.net>
 Description: This package provides functions to perform analysis of variance when the experimental units are spatially correlated. There are two methods to deal with spatial dependence: Autoregressive models and geostatistics. For both methods, there is three multicomparison procedure available: Tukey, multivariate T, and Scott-Knott.
-License: GPL-3
+License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true
+Depends: 
+    R (>= 2.10),
+    stats,
+    utils,
+    graphics,
+    geoR,
+    shiny
+Imports:
+    MASS,
+    Matrix,
+    ScottKnott,
+    car,
+    gtools,
+    multcomp,
+    multcompView,
+    mvtnorm,
+    devtools,
+    DT,
+    shinyBS,
+    xtable,
+    shinythemes,
+    shinysky,
+    rmarkdown,
+    knitr,
+    spdep
+Remotes: AnalytixWare/ShinySky
 RoxygenNote: 6.1.1

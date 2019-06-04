@@ -1,0 +1,58 @@
+---
+title: "Report of SpAnova"
+subtitle: "Spatial Simultaneous Autoregressive Approach"
+output: html_document
+params:
+  tab: NA
+  paramEst: NA
+  table: NA
+  modelAR: NA
+  McomP: NA
+  McompName: NA
+---
+
+## Parameter Estimate
+```{r, echo = FALSE}
+knitr::kable(params$paramEst)
+```
+
+## Analysis of Variance
+```{r, echo = FALSE}
+knitr::kable(params$tab)
+```
+
+## Checking the Residuals
+```{r, echo = FALSE}
+res <- params$modelAR$residuals
+par(mfrow = c(1,2))
+hist(res, xlab = "Residuals", main = "", freq = FALSE)
+lines(density(res))
+qqnorm(res)
+qqline(res)
+```
+
+```{r, echo = FALSE}
+knitr::kable(params$table)
+```
+
+```{r, echo = FALSE}
+  if (params$table$P.value < 0.05) {
+    textRes <- "According to Shapiro-Wilk normality test at 5% of significance, residuals cannot be considered normal."
+  }else {
+    textRes <- "According to Shapiro-Wilk normality test at 5% of significance, residuals can be considered normal."
+  }
+```
+
+`r textRes`
+
+## Multiple Comparison Procedure
+
+Procedure: `r params$McompName`
+
+```{r, echo = FALSE}
+knitr::kable(params$McomP)
+```
+
+Treatments with the same letter are not significantly different at 5% of significance.
+
+

@@ -1,0 +1,70 @@
+---
+title: "Report of SpAnova"
+subtitle: "Geostatistical Approach"
+output: html_document
+params:
+  tab: NA
+  modelVariofit: NA
+  modelVariog: NA
+  table: NA
+  semiPar: NA
+  CorF: NA
+  McomP: NA
+  McompName: NA
+  modelGeo: NA
+---
+
+## Semivariogram
+Correlation function: `r params$CorF`.
+
+```{r, echo = FALSE, fig.align = 'center'}
+plot(params$modelVariog)
+lines(params$modelVariofit, col = 1)
+```
+
+## Semivariogram Parameter Estimates
+```{r, echo = FALSE}
+knitr::kable(params$semiPar)
+```
+
+## Analysis of Variance
+```{r, echo = FALSE}
+knitr::kable(params$tab)
+```
+
+## Checking the Residuals
+```{r, echo = FALSE}
+res <- params$modelGeo$residuals
+par(mfrow = c(1,2))
+hist(res, xlab = "Residuals", main = "", freq = FALSE)
+lines(density(res))
+qqnorm(res)
+qqline(res)
+```
+
+
+```{r, echo = FALSE}
+knitr::kable(params$table)
+```
+
+```{r, echo = FALSE}
+  if (params$table$P.value < 0.05) {
+    textRes <- "According to Shapiro-Wilk normality test at 5% of significance, residuals cannot be considered normal."
+  }else {
+    textRes <- "According to Shapiro-Wilk normality test at 5% of significance, residuals can be considered normal."
+  }
+```
+
+`r textRes`
+
+## Multiple Comparison Procedure
+
+Procedure: `r params$McompName`
+
+```{r, echo = FALSE}
+knitr::kable(params$McomP)
+```
+
+Treatments with the same letter are not significantly different at 5% of significance.
+
+
