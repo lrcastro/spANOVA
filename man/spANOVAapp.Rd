@@ -14,8 +14,6 @@ launched automatically after the app is started.}
 Shiny app for analysis of variance with spatially correlated errors
 }
 \examples{
-\dontrun{
-library(spANOVA)
-}
-
+\donttest{
+spANOVAapp(external = TRUE)}
 }

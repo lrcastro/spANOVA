@@ -21,9 +21,8 @@
 #'
 #' @return
 #' a data frame containing the means and its group
-#' @examples
 #'
-#' \dontrun{
+#' @examples
 #' data("crd_simulated")
 #'
 #' #Geodata object
@@ -48,12 +47,10 @@
 #' mod <- aovGeo(ols, cutoff = 0.6)
 #'
 #' # Scott-Knott clustering algorithm
-#' spMVT(mod)
-#' }
-#'
+#' spScottKnott(mod)
 #'
 #' @references
-#' NOGUEIRA, C. H. Testes para comparações múltiplas de
+#' Nogueira, C. H. Testes para comparações múltiplas de
 #' médias em experimentos com tendência e dependência espacial.
 #' 142 f. Tese (Doutorado em Estatística e Experimentação
 #' Agropecuária) | Universidade Federal de Lavras, Lavras, 2017

@@ -121,14 +121,14 @@ anova(mod)
 
 }
 \references{
-NOGUEIRA, C. H., de LIMA, R. R., & de OLIVEIRA, M. S. (2013).
+Nogueira, C. H., de Liima, R. R., & de Oliveira, M. S. (2013).
 Aprimoramento da Análise de Variância: A Influência da Proximidade Espacial.
 Rev. Bras. Biom, 31(3), 408-422.
 
-NOGUEIRA, Cristina Henriques et al. (2015). Modelagem espacial na análise de um plantio
+Nogueira, C.H., et al. (2015). Modelagem espacial na análise de um plantio
 experimental de candeia. Rev. Bras. Biom., São Paulo, v.33, n.1, p.14-29.
 
-Pontes, José Marcelo, & Oliveira, Marcelo Silva de. (2004).
+Pontes, J. M., & de Oliveira, M. S. (2004).
 An alternative proposal to the analysis of  field experiments using geostatistics.
 Ciência e Agrotecnologia, 28(1), 135-141.
 

@@ -34,7 +34,7 @@
 #' \deqn{Y_{adj} = Y - (\hat{\rho}WY - \hat{\rho}\beta_0),}
 #'
 #' where \eqn{\hat{\rho}} denotes the autoregressive spatial parameter of the SAR model
-#' estimated by \code{\link[spdep]{lagsarlm}}, \eqn{\beta_0} is the overall mean and \eqn{W} is
+#' estimated by lagsarlm, \eqn{\beta_0} is the overall mean and \eqn{W} is
 #' a spatial neighborhood matrix which neighbors are defined as the samples located within
 #' a radius, this radius is specified as a sequence in \code{seq.radius}. For each radius
 #' in \code{seq.radius} the model is computed as well its AIC, then the radius chosen is the
@@ -70,11 +70,12 @@
 #' Arlinghaus, S.L. (Ed.), Practical Handbook of Spatial Statistics. CRC Press, Boca Raton, FL,
 #' pp. 251–278.
 #'
-#' ROSSONI, D. F.; LIMA, R. R. . Autoregressive analysis of variance for experiments with spatial
-#' dependence between plots: a simulation study. REVISTA BRASILEIRA DE BIOMETRIA, 2019
+#' Rossoni, D. F.; Lima, R. R. . Autoregressive analysis of variance for experiments with spatial
+#' dependence between plots: a simulation study. Revista Brasileira de Biometria, 2019.
 #'
-#' Long, D. S. (1998). Spatial autoregression modeling of site-specific wheat yield. Geoderma,
-#' 85(2-3), 181-197.
+#' Scolforo, Henrique Ferraço, et al. "Autoregressive spatial analysis and individual
+#' tree modeling as strategies for the management of Eremanthus erythropappus." Journal of
+#' forestry research 27.3 (2016): 595-603.
 #'
 #' @examples
 #' data("crd_simulated")
@@ -89,9 +90,10 @@
 #' #Anova for class SARanova
 #' anova(cv)
 #'
-#' @import spdep
 #' @importFrom gtools stars.pval
 #' @importFrom stats resid
+#' @importFrom spdep nb2listw dnearneigh nb2mat
+#' @importFrom spatialreg lagsarlm summary.sarlm print.sarlm anova.sarlm
 #' @export
 aovSar.crd <- function(resp, treat, coord, seq.radius) {
 

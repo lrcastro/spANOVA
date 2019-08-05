@@ -34,8 +34,6 @@ For objects of class GEOanova, the method is modified to take into account the s
 dependence among the observations. The method is described in Nogueira (2017).
 }
 \examples{
-
-\dontrun{
 data("crd_simulated")
 
 #Geodata object
@@ -60,13 +58,11 @@ ols <- spVariofit(variograma, cov.model = "gaussian", weights = "equal",
 mod <- aovGeo(ols, cutoff = 0.6)
 
 # Scott-Knott clustering algorithm
-spMVT(mod)
-}
-
+spScottKnott(mod)
 
 }
 \references{
-NOGUEIRA, C. H. Testes para comparações múltiplas de
+Nogueira, C. H. Testes para comparações múltiplas de
 médias em experimentos com tendência e dependência espacial.
 142 f. Tese (Doutorado em Estatística e Experimentação
 Agropecuária) | Universidade Federal de Lavras, Lavras, 2017

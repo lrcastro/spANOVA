@@ -13,6 +13,7 @@
 #' Pontes & Oliveira (2004). See 'Details'.
 #' @param tol the desired accuracy.
 #'
+#'
 #' @details
 #' Three assumptions are made about the error in the analysis of variance (ANOVA):
 #'
@@ -85,14 +86,14 @@
 #' \item{design}{character string indicating the name of the experimental design.}
 #'
 #' @references
-#' NOGUEIRA, C. H., de LIMA, R. R., & de OLIVEIRA, M. S. (2013).
+#' Nogueira, C. H., de Liima, R. R., & de Oliveira, M. S. (2013).
 #' Aprimoramento da Análise de Variância: A Influência da Proximidade Espacial.
 #' Rev. Bras. Biom, 31(3), 408-422.
 #'
-#' NOGUEIRA, Cristina Henriques et al. (2015). Modelagem espacial na análise de um plantio
+#' Nogueira, C.H., et al. (2015). Modelagem espacial na análise de um plantio
 #' experimental de candeia. Rev. Bras. Biom., São Paulo, v.33, n.1, p.14-29.
 #'
-#' Pontes, José Marcelo, & Oliveira, Marcelo Silva de. (2004).
+#' Pontes, J. M., & de Oliveira, M. S. (2004).
 #' An alternative proposal to the analysis of  field experiments using geostatistics.
 #' Ciência e Agrotecnologia, 28(1), 135-141.
 #'
@@ -207,8 +208,9 @@ aovGeo.spVariofitCRD <- function(model, cutoff = 0.5, tol = 1e-3){
     vario.res <- variog(geodados, max.dist = dist, trend = "cte", messages = FALSE)
     #plot(vario.res)
     #Ajustando o modelo teorico via MQO
-    ols <- variofit(vario.res, cov.model = covMod, weights = "equal",
-                    max.dist = dist, messages = FALSE)
+    ols <- variofit(vario.res, cov.model = covMod, max.dist = dist,
+                    messages = FALSE, ini.cov.pars = c(psill, phi), nugget = nugget)
+
     #lines(ols)
     #Extrair os parametros do objeto ols
     phi1 <- summary(ols)[[10]][[3]]    #Alcance
@@ -578,9 +580,11 @@ aovGeo.spVariofitRCBD <- function(model, cutoff = 0.5, tol = 1e-3){
     #Obter o semiovariograma empirico
     vario.res <- variog(geodados, max.dist = dist, trend = "cte", messages = FALSE)
     #plot(vario.res)
+
     #Ajustando o modelo teorico via MQO
-    ols <- variofit(vario.res, cov.model = covMod, weights = "equal",
-                    max.dist = dist, messages = FALSE)
+    ols <- variofit(vario.res, cov.model = covMod, max.dist = dist,
+                    messages = FALSE, ini.cov.pars = c(psill, phi), nugget = nugget)
+
     #lines(ols)
     #Extrair os parametros do objeto ols
     phi1 <- summary(ols)[[10]][[3]]    #Alcance
@@ -696,8 +700,8 @@ print.GEOrcbd <- function(x, ...){
   print(trm)
   rse <- sqrt(x$MS[3])
   cat("\n")
-  cat("Residual standard error:", rse)
-  cat("Covariance Model:", x$model)
+  cat("Residual standard error:", rse, "\n")
+  cat("Covariance Model:", x$model, "\n")
 }
 
 #' @export

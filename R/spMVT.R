@@ -21,7 +21,7 @@
 #'
 #' @examples
 #'
-#' \dontrun{
+#' \donttest{
 #' data("crd_simulated")
 #'
 #' #Geodata object
@@ -55,7 +55,7 @@
 #' while for the class SARanova the adjusted response based on SAR model is employed.
 #'
 #' @references
-#' NOGUEIRA, C. H. Testes para comparações múltiplas de
+#' Nogueira, C. H. Testes para comparações múltiplas de
 #' médias em experimentos com tendência e dependência espacial.
 #' 142 f. Tese (Doutorado em Estatística e Experimentação
 #' Agropecuária) | Universidade Federal de Lavras, Lavras, 2017

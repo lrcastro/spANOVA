@@ -37,7 +37,7 @@ shinyUI(fluidPage(
                  tags$br(),
                  #busyIndicator(text = "Calculation in progress..",wait = 500),
                  strong(textOutput("txt1")),
-                 uiOutput("anovaTable"),
+                 withSpinner(uiOutput("anovaTable"), type = 3, color.background = "#ffffff"),
                  tags$br(),
                  strong(textOutput("txt2")),
                  fluidRow(
@@ -48,7 +48,7 @@ shinyUI(fluidPage(
                  uiOutput("tests"),
                  uiOutput("mct"),
                  #busyIndicator(text = "Calculation in progress..",wait = 500),
-                 uiOutput("testeComp"),
+                 withSpinner(uiOutput("testeComp"), type = 3, color.background = "#ffffff"),
                  uiOutput("dld"),
                  value = "panel2"), id = "inTabset"
       )

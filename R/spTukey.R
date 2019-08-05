@@ -36,7 +36,7 @@
 #' while for the class SARanova the adjusted response based on SAR model is employed.
 #'
 #' @references
-#' NOGUEIRA, C. H. Testes para comparações múltiplas de
+#' Nogueira, C. H. Testes para comparações múltiplas de
 #' médias em experimentos com tendência e dependência espacial.
 #' 142 f. Tese (Doutorado em Estatística e Experimentação
 #' Agropecuária) | Universidade Federal de Lavras, Lavras, 2017
@@ -79,9 +79,9 @@ spTukey <- function(x, sig.level = 0.05) {
 #' @importFrom multcompView multcompLetters2 multcompLetters3
 #' @importFrom stats TukeyHSD
 #' @rdname spTukey
-#' @method spTukey SARcrd
+#' @method spTukey SARanova
 
-spTukey.SARcrd <- function(x, sig.level = 0.05){
+spTukey.SARanova<- function(x, sig.level = 0.05){
   exp_tukey <- TukeyHSD(x$modelAdj, conf.level = 1 - sig.level)
   let <- multcompLetters3(2, 1, exp_tukey$treat[,"p adj"], x$modelAdj$model)
   mbg <- tapply(x$modelAdj$model[,1], x$modelAdj$model[,2], mean)
@@ -96,23 +96,24 @@ spTukey.SARcrd <- function(x, sig.level = 0.05){
   return(result)
 }
 
-#' @export
-#' @importFrom multcompView multcompLetters2
-#' @rdname spTukey
-#' @method spTukey SARrcbd
-
-spTukey.SARrcbd <- function(x, sig.level = 0.05){
-  exp_tukey <- TukeyHSD(x$modelAdj, conf.level = 1 - sig.level)
-  let <- multcompLetters3(2, 1, exp_tukey$treat[,"p adj"], x$modelAdj$model)
-  mbg <- tapply(x$modelAdj$model[,1], x$modelAdj$model[,2], mean)
-  result <- data.frame(means = round(mbg[order(mbg,decreasing = TRUE)],3) ,
-                       groups = let$Letters)
-  cat("Tukey's Test","\n")
-  cat("\n")
-  cat("Treatments with the same letter are not significantly different at a", sig.level * 100,"%" ,"significance level.", "\n")
-  cat("\n")
-  return(result)
-}
+# export
+# importFrom multcompView multcompLetters2
+# rdname spTukey
+# method spTukey SARrcbd
+#
+# spTukey.SARrcbd <- function(x, sig.level = 0.05){
+#   exp_tukey <- TukeyHSD(x$modelAdj, conf.level = 1 - sig.level)
+#   let <- multcompLetters3(2, 1, exp_tukey$treat[,"p adj"], x$modelAdj$model)
+#   mbg <- tapply(x$modelAdj$model[,1], x$modelAdj$model[,2], mean)
+#   result <- data.frame(mean = round(mbg[order(mbg,decreasing = TRUE)],3),
+#                        filtered.mean = round(mbg[order(mbg,decreasing = TRUE)],3) ,
+#                        groups = let$Letters)
+#   cat("Tukey's Test","\n")
+#   cat("\n")
+#   cat("Treatments with the same letter are not significantly different at a", sig.level * 100,"%" ,"significance level.", "\n")
+#   cat("\n")
+#   return(result)
+# }
 
 #' @export
 #' @rdname spTukey

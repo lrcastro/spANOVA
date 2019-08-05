@@ -2,16 +2,13 @@
 % Please edit documentation in R/spTukey.R
 \name{spTukey}
 \alias{spTukey}
-\alias{spTukey.SARcrd}
-\alias{spTukey.SARrcbd}
+\alias{spTukey.SARanova}
 \alias{spTukey.GEOanova}
 \title{Compute Tukey Honest Significant Differences for a Spatially Correlated Model}
 \usage{
 spTukey(x, sig.level = 0.05)
 
-\method{spTukey}{SARcrd}(x, sig.level = 0.05)
-
-\method{spTukey}{SARrcbd}(x, sig.level = 0.05)
+\method{spTukey}{SARanova}(x, sig.level = 0.05)
 
 \method{spTukey}{GEOanova}(x, sig.level = 0.05)
 }
@@ -79,7 +76,7 @@ spTukey(mod)
 
 }
 \references{
-NOGUEIRA, C. H. Testes para comparações múltiplas de
+Nogueira, C. H. Testes para comparações múltiplas de
 médias em experimentos com tendência e dependência espacial.
 142 f. Tese (Doutorado em Estatística e Experimentação
 Agropecuária) | Universidade Federal de Lavras, Lavras, 2017

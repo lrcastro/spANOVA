@@ -1,13 +1,7 @@
 # spANOVA
 An R package to perform analysis of experiments with spatial dependence   
 
-# Install
-Before installing spANOVA make sure you have installed:
+# Installation
+The package is now available on CRAN, however for the latest version you can use the devtools package to install it from github directly:
 
-* spdep
-* agricolae
-* ScottKnott
-* multcomp
-* gtools
-
-And then you can proceed to installation by typing  `devtools::install_github("lrcastro/spANOVA",dependencies=TRUE)` in R console
+devtools::install_github('lrcastro/spANOVA')

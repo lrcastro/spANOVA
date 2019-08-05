@@ -64,7 +64,7 @@ correlated, by using a data transformation discussed in Long (1996)
 \deqn{Y_{adj} = Y - (\hat{\rho}WY - \hat{\rho}\beta_0),}
 
 where \eqn{\hat{\rho}} denotes the autoregressive spatial parameter of the SAR model estimated by
-\code{\link[spdep]{lagsarlm}}, \eqn{\beta_0} is the overall mean and \eqn{W} is a spatial neighborhood matrix which neighbors are defined as the
+lagsarlm, \eqn{\beta_0} is the overall mean and \eqn{W} is a spatial neighborhood matrix which neighbors are defined as the
 samples located within a radius, this radius is specified as a sequence in \code{seq.radius}. For each radius
 in \code{seq.radius} the model is computed as well its AIC, then the radius chosen is the one
 that minimizes AIC.
@@ -91,8 +91,8 @@ Long, D.S., 1996. Spatial statistics for analysis of variance of agronomic field
 Arlinghaus, S.L. (Ed.), Practical Handbook of Spatial Statistics. CRC Press, Boca Raton, FL,
 pp. 251–278.
 
-ROSSONI, D. F.; LIMA, R. R. . Autoregressive analysis of variance for experiments with spatial
-dependence between plots: a simulation study. REVISTA BRASILEIRA DE BIOMETRIA, 2019
+Rossoni, D. F.; Lima, R. R. . Autoregressive analysis of variance for experiments with spatial
+dependence between plots: a simulation study. Revista Brasileira de Biometria, 2019
 
 Scolforo, Henrique Ferraço, et al. "Autoregressive spatial analysis and individual
 tree modeling as strategies for the management of Eremanthus erythropappus." Journal of

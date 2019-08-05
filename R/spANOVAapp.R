@@ -8,18 +8,14 @@
 #'
 #' @param external logical. If true, the system's default web browser will be
 #' launched automatically after the app is started.
-#'
 #' @examples
-#' \dontrun{
-#' library(spANOVA)
-#  spANOVAapp()
-#' }
-#'
+#' \donttest{
+#' spANOVAapp(external = TRUE)}
 #' @export
 #' @importFrom DT datatable
 #' @importFrom stats dist
 #' @importFrom ape Moran.I
-#' @import shiny shinyBS xtable shinythemes rmarkdown knitr
+#' @import shiny shinyBS xtable shinythemes rmarkdown knitr shinycssloaders
 #'
 spANOVAapp <- function(external = TRUE) {
   appDir <- system.file("shiny", "spANOVAapp", package = "spANOVA")

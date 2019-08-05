@@ -36,7 +36,7 @@ spatial dependence among the observations as pointed out by Nogueira (2017)
 }
 \examples{
 
-\dontrun{
+\donttest{
 data("crd_simulated")
 
 #Geodata object
@@ -66,7 +66,7 @@ spMVT(mod)
 }
 }
 \references{
-NOGUEIRA, C. H. Testes para comparações múltiplas de
+Nogueira, C. H. Testes para comparações múltiplas de
 médias em experimentos com tendência e dependência espacial.
 142 f. Tese (Doutorado em Estatística e Experimentação
 Agropecuária) | Universidade Federal de Lavras, Lavras, 2017
