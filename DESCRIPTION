@@ -22,6 +22,7 @@ Imports:
     car,
     gtools,
     multcomp,
+    devtools,
     multcompView,
     mvtnorm,
     DT,
