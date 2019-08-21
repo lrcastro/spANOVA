@@ -299,6 +299,7 @@ server <- function(input, output, session) {
   # Text with the parameter estimates
   # psill
   output$psillEst<-renderText({
+    req(input$runA)
     if(input$spem == "geoest"){
       return(paste("Partial Sill:", round(fit()$mod$cov.pars[1],3)))
     }
@@ -306,6 +307,7 @@ server <- function(input, output, session) {
 
   # sill
   output$SillEst <- renderText({
+    req(input$runA)
     if(input$spem == "geoest"){
       return(paste("Sill:",round(fit()$mod$cov.pars[1]+fit()$mod$nugget,3)))
     }
@@ -313,6 +315,7 @@ server <- function(input, output, session) {
 
   # Range
   output$RangeEst <- renderText({
+    req(input$runA)
     if(input$spem == "geoest"){
       return(paste("Range:",round(fit()$mod$cov.pars[2],3)))
     }
@@ -320,6 +323,7 @@ server <- function(input, output, session) {
 
   # nugget
   output$NuggetEst <- renderText({
+    req(input$runA)
     if(input$spem == "geoest"){
       return(paste("Nugget:",round(fit()$mod$nugget,3)))
     }
